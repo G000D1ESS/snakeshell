@@ -1,7 +1,7 @@
 import os
 import sys
 
-from .utils import getcmd, change_dir
+from src.utils import getcmd, change_dir
 
 
 def main():
