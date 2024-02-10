@@ -14,7 +14,7 @@ def main():
         pid = os.fork()
         if pid == 0:
             os.fsync(0)
-            os.execv(f'/bin/{args[0]}', args)
+            os.execvp(cmd, args)
         else:
             _, status = os.waitpid(pid, os.P_WAIT)
             if status != 0:
