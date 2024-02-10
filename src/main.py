@@ -18,7 +18,7 @@ def main():
             os.fsync(0)
             os.execvp(cmd, args)
         else:
-            _, status = os.waitpid(pid, os.P_WAIT)
+            _, status = os.wait()
             if status != 0:
                 os.write(1, b'Exit: %d\n' % status)
 
