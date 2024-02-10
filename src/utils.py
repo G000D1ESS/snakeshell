@@ -1,5 +1,27 @@
 import os
 import sys
+import signal
+from dataclasses import dataclass
+
+
+class Command:
+
+    def __init__(
+        self,
+        path: str,
+        args: list[str],
+    ):
+        self.path = path
+        self.args = args
+
+
+    def run(self) -> None:
+        """
+        Run command.
+        """
+        os.fsync(0)
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
+        os.execvp(self.path, self.args)
 
 
 def promt() -> str:
@@ -22,22 +44,25 @@ def change_dir(path: str) -> None:
     os.chdir(path)
 
 
-def parse(cmd: str) -> tuple[str, list[str]]:
+def parse(cmd: str) -> Command:
     """
     Parse command line.
     """
     args = cmd.strip().split()
-    return args[0], args
+    return Command(
+        path=args[0],
+        args=args,
+    )
 
 
-def getcmd() -> tuple[str, list[str]]:
+def getcmd() -> Command | None:
     """
     Request user to write command, then parse it.
     """
     msg = promt()
     os.write(1, msg.encode())
-    cmd = os.read(0, 1024).decode()
+    cmd = os.read(0, 1024).decode().strip()
     if not cmd:
-        return '', []
+        return
     return parse(cmd)
 
