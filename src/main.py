@@ -7,7 +7,9 @@ from src.utils import getcmd, change_dir
 def main():
     sys.tracebacklimit = 0
     while True:
-        cmd, args = getcmd() 
+        cmd, args = getcmd()
+        if not cmd:
+            continue
         if cmd == 'cd':
             change_dir(args[1])
             continue

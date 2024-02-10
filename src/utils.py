@@ -37,5 +37,7 @@ def getcmd() -> tuple[str, list[str]]:
     msg = promt()
     os.write(1, msg.encode())
     cmd = os.read(0, 1024).decode()
+    if not cmd:
+        return '', []
     return parse(cmd)
 
