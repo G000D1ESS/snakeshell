@@ -2,7 +2,7 @@ import os
 import sys
 import signal
 
-from src.utils import getcmd, change_dir
+from .utils import getcmd, change_dir
 
 
 def main():
@@ -29,8 +29,4 @@ def main():
                 _, status = os.wait()
                 if status != 0:
                     os.write(1, b'Exit: %d\n' % status)
-
-
-if __name__ == '__main__':
-    main()
 

@@ -19,7 +19,7 @@ setup(
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'snakeshell=src.main:main',
+            'snakeshell=snakeshell.main:main',
         ],
     },
 )
