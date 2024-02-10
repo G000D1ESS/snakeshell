@@ -13,6 +13,8 @@ def main():
         if cmd == 'cd':
             change_dir(args[1])
             continue
+        if cmd == 'exit':
+            break
         pid = os.fork()
         if pid == 0:
             os.fsync(0)
