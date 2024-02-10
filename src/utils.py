@@ -26,7 +26,7 @@ def parse(cmd: str) -> tuple[str, list[str]]:
     """
     Parse command line.
     """
-    args = cmd.strip().split(' ')
+    args = cmd.strip().split()
     return args[0], args
 
 
