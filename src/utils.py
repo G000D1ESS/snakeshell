@@ -16,12 +16,43 @@ class Command:
 
 
     def run(self) -> None:
-        """
-        Run command.
-        """
         os.fsync(0)
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         os.execvp(self.path, self.args)
+
+
+class RedirectCommand(Command):
+
+    def __init__(
+        self,
+        path: str,
+        args: list[str],
+        stdout_to: str | None = None,
+        stdin_from: str | None = None,
+    ):
+        self.path = path
+        self.args = args
+        self.stdout_to = stdout_to
+        self.stdin_from = stdin_from
+
+    def run(self) -> None:
+        if self.stdin_from:
+            os.close(0)
+            fd = os.open(
+                path=self.stdin_from,
+                flags=os.O_RDONLY,
+                mode=0o644,
+            )
+            os.set_inheritable(fd, True)
+        if self.stdout_to:
+            os.close(1)
+            fd = os.open(
+                path=self.stdout_to,
+                flags=os.O_WRONLY|os.O_CREAT|os.O_TRUNC,
+                mode=0o644,
+            )
+            os.set_inheritable(fd, True)
+        super().run()
 
 
 def promt() -> str:
@@ -48,7 +79,23 @@ def parse(cmd: str) -> Command:
     """
     Parse command line.
     """
-    args = cmd.strip().split()
+    args = cmd.split()
+
+    if len(args) >= 2 and args[-2] in {'<', '>'}:
+        stdout_to = None
+        stdin_from = None
+        if args[-2] == '>':
+            stdout_to = args[-1]
+        elif args[-2] == '<':
+            stdin_from = args[-1]
+        args = args[:-2]
+        return RedirectCommand(
+            path=args[0],
+            args=args,
+            stdin_from=stdin_from,
+            stdout_to=stdout_to,
+        )
+
     return Command(
         path=args[0],
         args=args,
