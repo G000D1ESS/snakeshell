@@ -28,5 +28,5 @@ def main():
                 # Wait child process
                 _, status = os.wait()
                 if status != 0:
-                    os.write(1, b'Exit: %d\n' % status)
+                    os.write(2, b'Exit: %d\n' % status)
 
