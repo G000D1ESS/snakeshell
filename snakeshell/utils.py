@@ -1,6 +1,8 @@
 import os
 import sys
 import signal
+
+from collections import deque
 from dataclasses import dataclass
 
 
@@ -14,9 +16,7 @@ class Command:
         self.path = path
         self.args = args
 
-
     def run(self) -> None:
-        os.fsync(0)
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         os.execvp(self.path, self.args)
 
@@ -55,6 +55,41 @@ class RedirectCommand(Command):
         super().run()
 
 
+class DumbPipeline:
+    
+    def __init__(
+            self,
+            first: Command,
+            second: Command,
+    ):
+        self.path = None
+        self._first = first
+        self._second = second
+        self._commands: deque[Command]
+
+    def run(self) -> None:
+
+        r_fd, w_fd = os.pipe()
+        os.set_inheritable(r_fd, True)
+        os.set_inheritable(w_fd, True)
+        
+        if os.fork() == 0:
+            os.close(r_fd)
+            os.dup2(w_fd, 1)
+            os.close(w_fd)
+            self._first.run()
+
+        if os.fork() == 0:
+            os.close(w_fd)
+            os.dup2(r_fd, 0)
+            os.close(r_fd)
+            self._second.run()
+
+        os.close(r_fd)
+        os.close(w_fd)
+        os.wait()
+
+
 def promt() -> str:
     """
     Generete promt message.
@@ -79,6 +114,16 @@ def parse(cmd: str) -> Command:
     """
     Parse command line.
     """
+    if '|' in cmd:
+        commands = []
+        for subcmd in cmd.split('|'):
+            command = parse(subcmd)
+            commands.append(command)
+        return DumbPipeline(
+            first=commands[0],
+            second=commands[1],
+        )
+
     args = cmd.split()
 
     if len(args) >= 2 and args[-2] in {'<', '>'}:
