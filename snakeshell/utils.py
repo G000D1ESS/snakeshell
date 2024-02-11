@@ -63,7 +63,7 @@ def promt() -> str:
     homedir = os.path.expanduser('~')
     if dirname.startswith(homedir):
         dirname = '~' + dirname[len(homedir):]
-    return f'{dirname} $ '
+    return f'\033[34;1m{dirname}\033[0m $ '
 
 
 def change_dir(path: str) -> None:
