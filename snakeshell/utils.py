@@ -3,22 +3,7 @@ import sys
 import signal
 from dataclasses import dataclass
 
-
-class Command:
-
-    def __init__(
-        self,
-        path: str,
-        args: list[str],
-    ):
-        self.path = path
-        self.args = args
-
-
-    def run(self) -> None:
-        os.fsync(0)
-        signal.signal(signal.SIGINT, signal.SIG_DFL)
-        os.execvp(self.path, self.args)
+from .cmd import Command
 
 
 class RedirectCommand(Command):
@@ -79,7 +64,7 @@ def parse(cmd: str) -> Command:
     """
     Parse command line.
     """
-    args = cmd.split()
+    path, *args = cmd.split()
 
     if len(args) >= 2 and args[-2] in {'<', '>'}:
         stdout_to = None
@@ -90,14 +75,14 @@ def parse(cmd: str) -> Command:
             stdin_from = args[-1]
         args = args[:-2]
         return RedirectCommand(
-            path=args[0],
+            path=path,
             args=args,
             stdin_from=stdin_from,
             stdout_to=stdout_to,
         )
 
     return Command(
-        path=args[0],
+        path=path,
         args=args,
     )
 

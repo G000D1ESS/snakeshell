@@ -21,7 +21,7 @@ def loop():
             continue
         match command.path:
             case 'cd':
-                change_dir(command.args[1])
+                change_dir(command.args[0])
             case 'exit':
                 break
             case _:
