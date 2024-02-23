@@ -6,11 +6,15 @@ from .utils import getcmd, change_dir
 
 
 def setup():
+    # Disable the traceback to simplify error messages.
     sys.tracebacklimit = 0
+
+    # Ignore SIGINT (Ctrl+C), preventing the shell from exiting on Ctrl+C.
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
 def loop():
+    # Start an infinite loop to continuously accept commands.
     while True:
         command = getcmd()
         if not command:
