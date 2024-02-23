@@ -6,40 +6,6 @@ from dataclasses import dataclass
 from .cmd import Command
 
 
-class RedirectCommand(Command):
-
-    def __init__(
-        self,
-        path: str,
-        args: list[str],
-        stdout_to: str | None = None,
-        stdin_from: str | None = None,
-    ):
-        self.path = path
-        self.args = args
-        self.stdout_to = stdout_to
-        self.stdin_from = stdin_from
-
-    def run(self) -> None:
-        if self.stdin_from:
-            os.close(0)
-            fd = os.open(
-                path=self.stdin_from,
-                flags=os.O_RDONLY,
-                mode=0o644,
-            )
-            os.set_inheritable(fd, True)
-        if self.stdout_to:
-            os.close(1)
-            fd = os.open(
-                path=self.stdout_to,
-                flags=os.O_WRONLY|os.O_CREAT|os.O_TRUNC,
-                mode=0o644,
-            )
-            os.set_inheritable(fd, True)
-        super().run()
-
-
 def promt() -> str:
     """
     Generete promt message.
