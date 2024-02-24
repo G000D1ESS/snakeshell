@@ -9,19 +9,27 @@ class Command:
     path: str
     args: list[str]
 
-    def run(self):
-        # Set the signal handler for SIGINT (Ctrl+C) to the default handling.
-        # This ensures that the subprocess will terminate on a SIGINT signal.
-        signal.signal(
-            signal.SIGINT,
-            signal.SIG_DFL,
-        )
+    def run(self) -> int:
 
-        # Replace the current process with a new process running the command.
-        os.execvp(
-            file=self.path,
-            args=[self.path] + self.args,
-        )
+        # Child process
+        pid = os.fork()
+        if pid == 0:
+            # Set the signal handler for SIGINT (Ctrl+C) to the default handling.
+            # This ensures that the subprocess will terminate on a SIGINT signal.
+            signal.signal(
+                signal.SIGINT,
+                signal.SIG_DFL,
+            )
+            # Replace the current process with a new process running the command.
+            os.execvp(
+                file=self.path,
+                args=[self.path] + self.args,
+            )
+
+        # Parent process
+        _, wait_status = os.wait()
+        exit_code = os.waitstatus_to_exitcode(wait_status)
+        return exit_code
 
 
 @dataclass
@@ -30,7 +38,7 @@ class ShellCommand:
     input_file: str | None = None
     output_file: str | None = None
 
-    def run(self):
+    def run(self) -> int:
 
         # Redirect standard input if `self.input_file` is specified.
         if self.input_file is not None:
@@ -53,5 +61,5 @@ class ShellCommand:
             os.set_inheritable(1, True)
 
         # Execute the command with optional redirections applied.
-        self.command.run()
+        return self.command.run()
 

@@ -25,13 +25,9 @@ def loop():
             case 'exit':
                 break
             case _:
-                pid = os.fork()
-                if pid == 0:
-                    command.run()
-                # Wait child process
-                _, status = os.wait()
-                if status != 0:
-                    os.write(2, b'\033[101mExit: %d\033[0m\n' % status)
+                exit_code = command.run()
+                if exit_code != 0:
+                    os.write(2, b'\033[101mExit: %d\033[0m\n' % exit_code)
 
 
 def run_shell():
