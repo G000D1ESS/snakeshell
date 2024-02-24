@@ -1,9 +1,26 @@
+import os
+import sys
+
+from .cmd import Command
 
 
-def change_dir(path: str) -> None:
-    """
-    Move to directory.
-    """
-    path = os.path.normpath(path)
-    path = os.path.expanduser(path)
-    os.chdir(path)
+class ExitCommand(Command):
+    def run(self) -> int:
+        sys.exit(0)
+        return 0
+
+
+class ChangeDirCommand(Command):
+    def run(self):
+        path = self.args[0]
+        path = os.path.normpath(path)
+        path = os.path.expanduser(path)
+        os.chdir(path)
+        return 0
+
+
+BUILTIN_COMMANDS = {
+    'exit': ExitCommand,
+    'cd': ChangeDirCommand,
+}
+
