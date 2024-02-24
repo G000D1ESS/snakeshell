@@ -15,15 +15,6 @@ def promt() -> str:
     return f'\033[34;1m{dirname}\033[0m $ '
 
 
-def change_dir(path: str) -> None:
-    """
-    Move to directory.
-    """
-    path = os.path.normpath(path)
-    path = os.path.expanduser(path)
-    os.chdir(path)
-
-
 def getcmd() -> ShellCommand | None:
     """
     Request user to write command, then parse it.
