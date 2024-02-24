@@ -1,6 +1,7 @@
 import os
 
-from .parser import ParsedCommand, parse_command
+from .cmd import ShellCommand
+from .parser import parse_command
 
 
 def promt() -> str:
@@ -23,7 +24,7 @@ def change_dir(path: str) -> None:
     os.chdir(path)
 
 
-def getcmd() -> ParsedCommand | None:
+def getcmd() -> ShellCommand | None:
     """
     Request user to write command, then parse it.
     """

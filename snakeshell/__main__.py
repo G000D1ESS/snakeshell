@@ -2,7 +2,6 @@ import os
 import sys
 import signal
 
-from .cmd import run_command
 from .utils import getcmd, change_dir
 
 
@@ -17,22 +16,18 @@ def setup():
 def loop():
     # Start an infinite loop to continuously accept commands.
     while True:
-        command, write_to, read_from = getcmd()
+        command = getcmd()
         if not command:
             continue
-        match command.path:
+        match command.command.path:
             case 'cd':
-                change_dir(command.args[0])
+                change_dir(command.command.args[0])
             case 'exit':
                 break
             case _:
                 pid = os.fork()
                 if pid == 0:
-                    run_command(
-                        cmd=command,
-                        write_to=write_to,
-                        read_from=read_from,
-                    )
+                    command.run()
                 # Wait child process
                 _, status = os.wait()
                 if status != 0:

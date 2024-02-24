@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import NamedTuple
 
-from .cmd import Command
+from .cmd import Command, ShellCommand
 
 
 class Token(str, Enum):
@@ -9,16 +9,11 @@ class Token(str, Enum):
     STDIN_FROM = '<'
 
 
-class ParsedCommand(NamedTuple):
-    command: Command
-    write_to: str | None = None
-    read_from: str | None = None
-
-
-def parse_command(command_line: str) -> ParsedCommand:
+def parse_command(command_line: str) -> ShellCommand:
     
-    write_to = None
-    read_from = None
+    input_file = None
+    output_file = None
+
     execute_path, *tokens = command_line.split()
 
     i = 0
@@ -28,10 +23,10 @@ def parse_command(command_line: str) -> ParsedCommand:
         match token:
             case Token.STDOUT_TO:
                 i += 1
-                write_to = tokens[i]
+                output_file = tokens[i]
             case Token.STDIN_FROM:
                 i += 1
-                read_from = tokens[i]
+                input_file = tokens[i]
             case _:
                 cmd_args.append(token)
         i += 1
@@ -41,9 +36,9 @@ def parse_command(command_line: str) -> ParsedCommand:
         args=cmd_args,
     )
 
-    return ParsedCommand(
+    return ShellCommand(
         command=command,
-        write_to=write_to,
-        read_from=read_from,
+        input_file=input_file,
+        output_file=output_file,
     )
 

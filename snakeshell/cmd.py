@@ -24,32 +24,34 @@ class Command:
         )
 
 
-def run_command(
-    cmd: Command,
-    write_to: str | None = None,
-    read_from: str | None = None,
-) -> None:
+@dataclass
+class ShellCommand:
+    command: Command
+    input_file: str | None = None
+    output_file: str | None = None
 
-    # Redirect standard output if `write_to` is specified.
-    if write_to:
-        os.close(1)
-        os.open(
-            mode=0o644,
-            path=write_to,
-            flags=os.O_WRONLY|os.O_CREAT|os.O_TRUNC,
-        )
-        os.set_inheritable(1, True)
+    def run(self):
 
-    # Redirect standard input if `read_from` is specified.
-    if read_from:
-        os.close(0)
-        os.open(
-            mode=0o644,
-            path=read_from,
-            flags=os.O_RDONLY,
-        )
-        os.set_inheritable(0, True)
+        # Redirect standard input if `self.input_file` is specified.
+        if self.input_file is not None:
+            os.close(0)
+            os.open(
+                mode=0o644,
+                path=self.input_file,
+                flags=os.O_RDONLY,
+            )
+            os.set_inheritable(0, True)
 
-    # Execute the command with optional redirections applied.
-    cmd.run()
+        # Redirect standard output if `self.output_file` is specified.
+        if self.output_file is not None:
+            os.close(1)
+            os.open(
+                mode=0o644,
+                path=self.output_file,
+                flags=os.O_WRONLY|os.O_CREAT|os.O_TRUNC,
+            )
+            os.set_inheritable(1, True)
+
+        # Execute the command with optional redirections applied.
+        self.command.run()
 
