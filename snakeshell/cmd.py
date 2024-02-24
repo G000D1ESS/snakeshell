@@ -21,17 +21,11 @@ class Command:
 
             # Redirect standard input if `stdin` is specified.
             if stdin_fd is not None:
-                os.close(0)
-                os.dup(stdin_fd)
-                os.close(stdin_fd)
-                os.set_inheritable(0, True)
+                os.dup2(stdin_fd, 0)
 
             # Redirect standard output if `stdout` is specified.
             if stdout_fd is not None:
-                os.close(1)
-                os.dup(stdout_fd)
-                os.close(stdout_fd)
-                os.set_inheritable(1, True)
+                os.dup2(stdout_fd, 1)
 
             # Set the signal handler for SIGINT (Ctrl+C) to the default handling.
             # This ensures that the subprocess will terminate on a SIGINT signal.
