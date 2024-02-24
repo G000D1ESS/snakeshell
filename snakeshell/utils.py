@@ -1,9 +1,6 @@
 import os
-import sys
-import signal
-from dataclasses import dataclass
 
-from .cmd import Command
+from .parser import ParsedCommand, parse_command
 
 
 def promt() -> str:
@@ -26,34 +23,7 @@ def change_dir(path: str) -> None:
     os.chdir(path)
 
 
-def parse(cmd: str) -> Command:
-    """
-    Parse command line.
-    """
-    path, *args = cmd.split()
-
-    if len(args) >= 2 and args[-2] in {'<', '>'}:
-        stdout_to = None
-        stdin_from = None
-        if args[-2] == '>':
-            stdout_to = args[-1]
-        elif args[-2] == '<':
-            stdin_from = args[-1]
-        args = args[:-2]
-        return RedirectCommand(
-            path=path,
-            args=args,
-            stdin_from=stdin_from,
-            stdout_to=stdout_to,
-        )
-
-    return Command(
-        path=path,
-        args=args,
-    )
-
-
-def getcmd() -> Command | None:
+def getcmd() -> ParsedCommand | None:
     """
     Request user to write command, then parse it.
     """
@@ -62,5 +32,5 @@ def getcmd() -> Command | None:
     cmd = os.read(0, 1024).decode().strip()
     if not cmd:
         return
-    return parse(cmd)
+    return parse_command(cmd)
 
