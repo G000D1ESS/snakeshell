@@ -2,7 +2,7 @@ import os
 import sys
 import signal
 
-from .utils import getcmd, change_dir
+from .utils import getcmd
 
 
 def setup():
@@ -19,15 +19,9 @@ def loop():
         command = getcmd()
         if not command:
             continue
-        match command.command.path:
-            case 'cd':
-                change_dir(command.command.args[0])
-            case 'exit':
-                break
-            case _:
-                exit_code = command.run()
-                if exit_code != 0:
-                    os.write(2, b'\033[101mExit: %d\033[0m\n' % exit_code)
+        exit_code = command.run()
+        if exit_code != 0:
+            os.write(2, b'\033[101mExit: %d\033[0m\n' % exit_code)
 
 
 def run_shell():

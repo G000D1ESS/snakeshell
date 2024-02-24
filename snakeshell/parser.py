@@ -1,6 +1,6 @@
 from enum import Enum
-from typing import NamedTuple
 
+from .builtin import BUILTIN_COMMANDS
 from .cmd import Command, ShellCommand
 
 
@@ -31,7 +31,11 @@ def parse_command(command_line: str) -> ShellCommand:
                 cmd_args.append(token)
         i += 1
 
-    command = Command(
+    command_factory = Command
+    if builtin_factory := BUILTIN_COMMANDS.get(execute_path):
+        command_factory = builtin_factory
+
+    command: Command = command_factory(
         path=execute_path,
         args=cmd_args,
     )
