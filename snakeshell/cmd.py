@@ -9,17 +9,37 @@ class Command:
     path: str
     args: list[str]
 
-    def run(self) -> int:
+    def run(
+        self,
+        stdin_fd: int | None = None,
+        stdout_fd: int | None = None,
+    ) -> int:
 
-        # Child process
         pid = os.fork()
         if pid == 0:
+            # Child process
+
+            # Redirect standard input if `stdin` is specified.
+            if stdin_fd is not None:
+                os.close(0)
+                os.dup(stdin_fd)
+                os.close(stdin_fd)
+                os.set_inheritable(0, True)
+
+            # Redirect standard output if `stdout` is specified.
+            if stdout_fd is not None:
+                os.close(1)
+                os.dup(stdout_fd)
+                os.close(stdout_fd)
+                os.set_inheritable(1, True)
+
             # Set the signal handler for SIGINT (Ctrl+C) to the default handling.
             # This ensures that the subprocess will terminate on a SIGINT signal.
             signal.signal(
                 signal.SIGINT,
                 signal.SIG_DFL,
             )
+
             # Replace the current process with a new process running the command.
             os.execvp(
                 file=self.path,
@@ -27,6 +47,14 @@ class Command:
             )
 
         # Parent process
+
+        # Close file descriptors
+        if stdin_fd is not None:
+            os.close(stdin_fd)
+        if stdout_fd is not None:
+            os.close(stdout_fd)
+
+        # Wait child process
         _, wait_status = os.wait()
         exit_code = os.waitstatus_to_exitcode(wait_status)
         return exit_code
@@ -40,26 +68,25 @@ class ShellCommand:
 
     def run(self) -> int:
 
-        # Redirect standard input if `self.input_file` is specified.
+        stdin_fd: int | None = None
+        stdout_fd: int | None = None
+
         if self.input_file is not None:
-            os.close(0)
-            os.open(
+            stdin_fd = os.open(
                 mode=0o644,
                 path=self.input_file,
                 flags=os.O_RDONLY,
             )
-            os.set_inheritable(0, True)
 
-        # Redirect standard output if `self.output_file` is specified.
         if self.output_file is not None:
-            os.close(1)
-            os.open(
+            stdout_fd = os.open(
                 mode=0o644,
                 path=self.output_file,
                 flags=os.O_WRONLY|os.O_CREAT|os.O_TRUNC,
             )
-            os.set_inheritable(1, True)
 
-        # Execute the command with optional redirections applied.
-        return self.command.run()
+        return self.command.run(
+            stdin_fd=stdin_fd,
+            stdout_fd=stdout_fd,
+        )
 

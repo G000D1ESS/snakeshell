@@ -5,13 +5,13 @@ from .cmd import Command
 
 
 class ExitCommand(Command):
-    def run(self) -> int:
+    def run(self, *args, **kwargs) -> int:
         sys.exit(0)
         return 0
 
 
 class ChangeDirCommand(Command):
-    def run(self):
+    def run(self, *args, **kwargs):
         path = self.args[0]
         path = os.path.normpath(path)
         path = os.path.expanduser(path)
