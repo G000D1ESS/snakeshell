@@ -71,6 +71,7 @@ class ShellCommand:
         stdin_fd: int | None = None
         stdout_fd: int | None = None
 
+        # If an input file is specified, open it as read-only
         if self.input_file is not None:
             stdin_fd = os.open(
                 mode=0o644,
@@ -78,6 +79,8 @@ class ShellCommand:
                 flags=os.O_RDONLY,
             )
 
+        # If an output file is specified, open/create
+        # it for writing, truncating it first
         if self.output_file is not None:
             stdout_fd = os.open(
                 mode=0o644,
@@ -85,6 +88,8 @@ class ShellCommand:
                 flags=os.O_WRONLY|os.O_CREAT|os.O_TRUNC,
             )
 
+        # Execute the command with the provided file descriptors
+        # for stdin and stdout
         return self.command.run(
             stdin_fd=stdin_fd,
             stdout_fd=stdout_fd,
