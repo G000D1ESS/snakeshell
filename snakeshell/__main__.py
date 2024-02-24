@@ -2,7 +2,9 @@ import os
 import sys
 import signal
 
-from .utils import getcmd
+from .console import error as show_error 
+from .console import prompt_user_to_input
+from .parser import parse_command
 
 
 def setup():
@@ -16,12 +18,16 @@ def setup():
 def loop():
     # Start an infinite loop to continuously accept commands.
     while True:
-        command = getcmd()
-        if not command:
+        line = prompt_user_to_input()
+        if not line:
+            break
+        line = line.strip()
+        if not line:
             continue
+        command = parse_command(line)
         exit_code = command.run()
         if exit_code != 0:
-            os.write(2, b'\033[101mExit: %d\033[0m\n' % exit_code)
+            show_error('\033[101mExit: %d\033[0m' % exit_code)
 
 
 def run_shell():
