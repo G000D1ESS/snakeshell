@@ -27,7 +27,7 @@ def loop():
         command = parse_command(line)
         exit_code = command.run()
         if exit_code != 0:
-            show_error('\033[101mExit: %d\033[0m' % exit_code)
+            show_error(f'Exit: {exit_code}')
 
 
 def run_shell():

@@ -26,8 +26,8 @@ def error(msg: str) -> None:
     """
     Writes an error message to the standard error output.
     """
-    msg += '\n'
-    os.write(2, msg.encode('utf-8'))
+    color_msg = '\033[101m' + msg + '\033[0m\n'
+    os.write(2, color_msg.encode('utf-8'))
 
 
 def prompt_msg() -> str:
