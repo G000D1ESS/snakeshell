@@ -27,7 +27,7 @@ class InvertExitStatusCommand(Command):
             args=self.args[1:],
         )
         exit_status = subcommand.run(*args, **kwargs)
-        return int(exit_status != 0)
+        return int(exit_status == 0)
 
 
 class CommandFactory:
