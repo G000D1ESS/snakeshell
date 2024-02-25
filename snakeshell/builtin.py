@@ -1,5 +1,6 @@
 import os
 import sys
+import signal
 
 from .command import Command
 
@@ -30,11 +31,28 @@ class InvertExitStatusCommand(Command):
         return int(exit_status == 0)
 
 
+class ExecCommand(Command):
+    def execute(self, *args, **kwargs):
+        # Set the signal handler for SIGINT (Ctrl+C) to the default handling.
+        # This ensures that the process will terminate on a SIGINT signal.
+        signal.signal(
+            signal.SIGINT,
+            signal.SIG_DFL,
+        )
+
+        # Replace the current process with a new process running the command.
+        os.execvp(
+            file=self.args[0],
+            args=self.args,
+        )
+
+
 class CommandFactory:
 
     def __init__(self):
         self.builtins = {
             'exit': ExitCommand,
+            'exec': ExecCommand,
             'cd': ChangeDirCommand,
             '!': InvertExitStatusCommand,
         }
