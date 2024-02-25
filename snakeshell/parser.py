@@ -1,12 +1,13 @@
 from enum import Enum
 
 from .builtin import CommandFactory
-from .command import Command, ShellCommand
+from .command import ShellCommand, CommandSequence
 
 
 class Token(str, Enum):
     STDOUT_TO = '>'
     STDIN_FROM = '<'
+    END_OPERATOR = ';'
 
 
 def parse_command(command_line: str) -> ShellCommand:
@@ -42,4 +43,13 @@ def parse_command(command_line: str) -> ShellCommand:
         input_file=input_file,
         output_file=output_file,
     )
+
+
+def parse_commands(command_line: str) -> CommandSequence:
+    commands = CommandSequence()
+    for command in command_line.split(Token.END_OPERATOR):
+        command = command.strip()
+        command = parse_command(command)
+        commands.add(command)
+    return commands
 

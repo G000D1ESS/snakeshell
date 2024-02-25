@@ -1,7 +1,8 @@
 import os
 import signal
+from enum import Enum
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -88,4 +89,20 @@ class ShellCommand:
             stdin_fd=stdin_fd,
             stdout_fd=stdout_fd,
         )
+
+
+@dataclass
+class CommandSequence:
+    commands: list[ShellCommand] = field(default_factory=list)
+
+    def add(self, command: ShellCommand):
+        self.commands.append(command)
+
+    def execute(self) -> int:
+        # Executes each shell command in the sequence, in order.
+        exit_status = 0
+        for command in self.commands:
+            exit_status = command.execute()
+        return exit_status
+
 

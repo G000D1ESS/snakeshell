@@ -4,7 +4,7 @@ import signal
 
 from .console import error as show_error 
 from .console import prompt_user_to_input
-from .parser import parse_command
+from .parser import parse_commands
 
 
 def setup():
@@ -24,8 +24,8 @@ def loop():
         line = line.strip()
         if not line:
             continue
-        command = parse_command(line)
-        exit_code = command.execute()
+        commands = parse_commands(line)
+        exit_code = commands.execute()
         if exit_code != 0:
             show_error(f'Exit: {exit_code}')
 
