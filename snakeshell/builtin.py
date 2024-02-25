@@ -1,7 +1,7 @@
 import os
 import sys
 
-from .cmd import Command
+from .command import Command
 
 
 class ExitCommand(Command):

@@ -1,7 +1,7 @@
 from enum import Enum
 
 from .builtin import BUILTIN_COMMANDS
-from .cmd import Command, ShellCommand
+from .command import Command, ShellCommand
 
 
 class Token(str, Enum):
