@@ -11,12 +11,23 @@ class ExitCommand(Command):
 
 
 class ChangeDirCommand(Command):
-    def run(self, *args, **kwargs):
+    def run(self, *args, **kwargs) -> int:
         path = self.args[0]
         path = os.path.normpath(path)
         path = os.path.expanduser(path)
         os.chdir(path)
         return 0
+
+
+class InvertExitStatusCommand(Command):
+    def run(self, *args, **kwargs) -> int:
+        factory = CommandFactory()
+        subcommand = factory.get_command(
+            path=self.args[0],
+            args=self.args[1:],
+        )
+        exit_status = subcommand.run(*args, **kwargs)
+        return int(exit_status != 0)
 
 
 class CommandFactory:
@@ -25,6 +36,7 @@ class CommandFactory:
         self.builtins = {
             'exit': ExitCommand,
             'cd': ChangeDirCommand,
+            '!': InvertExitStatusCommand,
         }
 
     def get_command(
@@ -41,7 +53,4 @@ class CommandFactory:
             path=path,
             args=args,
         )
-
-
-command_factory = CommandFactory()
 

@@ -1,6 +1,6 @@
 from enum import Enum
 
-from .builtin import command_factory
+from .builtin import CommandFactory
 from .command import Command, ShellCommand
 
 
@@ -14,6 +14,7 @@ def parse_command(command_line: str) -> ShellCommand:
     input_file = None
     output_file = None
 
+    command_factory = CommandFactory()
     execute_path, *tokens = command_line.split()
 
     i = 0
