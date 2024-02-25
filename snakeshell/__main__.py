@@ -25,7 +25,7 @@ def loop():
         if not line:
             continue
         command = parse_command(line)
-        exit_code = command.run()
+        exit_code = command.execute()
         if exit_code != 0:
             show_error(f'Exit: {exit_code}')
 

@@ -9,7 +9,7 @@ class Command:
     path: str
     args: list[str]
 
-    def run(
+    def execute(
         self,
         stdin_fd: int | None = None,
         stdout_fd: int | None = None,
@@ -60,7 +60,7 @@ class ShellCommand:
     input_file: str | None = None
     output_file: str | None = None
 
-    def run(self) -> int:
+    def execute(self) -> int:
 
         stdin_fd: int | None = None
         stdout_fd: int | None = None
@@ -84,7 +84,7 @@ class ShellCommand:
 
         # Execute the command with the provided file descriptors
         # for stdin and stdout
-        return self.command.run(
+        return self.command.execute(
             stdin_fd=stdin_fd,
             stdout_fd=stdout_fd,
         )

@@ -5,13 +5,13 @@ from .command import Command
 
 
 class ExitCommand(Command):
-    def run(self, *args, **kwargs) -> int:
+    def execute(self, *args, **kwargs) -> int:
         sys.exit(0)
         return 0
 
 
 class ChangeDirCommand(Command):
-    def run(self, *args, **kwargs) -> int:
+    def execute(self, *args, **kwargs) -> int:
         path = self.args[0]
         path = os.path.normpath(path)
         path = os.path.expanduser(path)
@@ -20,13 +20,13 @@ class ChangeDirCommand(Command):
 
 
 class InvertExitStatusCommand(Command):
-    def run(self, *args, **kwargs) -> int:
+    def execute(self, *args, **kwargs) -> int:
         factory = CommandFactory()
         subcommand = factory.get_command(
             path=self.args[0],
             args=self.args[1:],
         )
-        exit_status = subcommand.run(*args, **kwargs)
+        exit_status = subcommand.execute(*args, **kwargs)
         return int(exit_status == 0)
 
 
