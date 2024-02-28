@@ -18,32 +18,6 @@ class ShellNode:
         return exit_code
 
 
-class ListNode(ShellNode):
-    pass
-
-
-class OrListNode(ListNode):
-
-    def execute(self) -> int:
-        exit_code: int = 0
-        for child in self.children:
-            exit_code = child.execute()
-            if exit_code == 0:
-                return exit_code
-        return exit_code
-
-
-class AndListNode(ListNode):
-
-    def execute(self) -> int:
-        exit_code: int = 0
-        for child in self.children:
-            exit_code = child.execute()
-            if exit_code != 0:
-                return exit_code
-        return exit_code
-
-
 class CommandNode(ShellNode):
 
     def __init__(
@@ -91,4 +65,30 @@ class BuiltinCommandNode(CommandNode):
             case 'exit':
                 sys.exit(0)
         return 0
+
+
+class ListNode(ShellNode):
+    pass
+
+
+class OrListNode(ListNode):
+
+    def execute(self) -> int:
+        exit_code: int = 0
+        for child in self.children:
+            exit_code = child.execute()
+            if exit_code == 0:
+                return exit_code
+        return exit_code
+
+
+class AndListNode(ListNode):
+
+    def execute(self) -> int:
+        exit_code: int = 0
+        for child in self.children:
+            exit_code = child.execute()
+            if exit_code != 0:
+                return exit_code
+        return exit_code
 
