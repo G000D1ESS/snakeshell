@@ -1,7 +1,11 @@
 import os
+import sys
 import signal
 
 from enum import Enum
+
+
+BUILTIN_COMMANDS = {'cd', 'exit'}
 
 
 class Operators(str, Enum):
@@ -29,7 +33,7 @@ class ListNode(ShellNode):
     pass
 
 
-class OrListNode(ShellNode):
+class OrListNode(ListNode):
 
     def execute(self) -> int:
         exit_code: int = 0
@@ -40,7 +44,7 @@ class OrListNode(ShellNode):
         return exit_code
 
 
-class AndListNode(ShellNode):
+class AndListNode(ListNode):
 
     def execute(self) -> int:
         exit_code: int = 0
@@ -51,7 +55,7 @@ class AndListNode(ShellNode):
         return exit_code
 
 
-class ExecNode(ShellNode):
+class CommandNode(ShellNode):
 
     def __init__(
         self,
@@ -62,7 +66,7 @@ class ExecNode(ShellNode):
         self.execute_path = execute_path
         self.arguments = arguments
 
-    def execute(self):
+    def execute(self) -> int:
         pid = os.fork()
         if pid == 0:
             # Child process.
@@ -84,6 +88,20 @@ class ExecNode(ShellNode):
         _, wait_status = os.wait()
         exit_code = os.waitstatus_to_exitcode(wait_status)
         return exit_code
+
+
+class BuiltinCommandNode(CommandNode):
+
+    def execute(self) -> int:
+        match self.execute_path:
+            case 'cd':
+                path = self.arguments[1]
+                path = os.path.normpath(path)
+                path = os.path.expanduser(path)
+                os.chdir(path)
+            case 'exit':
+                sys.exit(0)
+        return 0
 
 
 def parse(user_input: str) -> ShellNode:
@@ -115,7 +133,12 @@ def parse_and_list(command_block: str) -> ShellNode:
 
 def parse_command(command: str) -> ShellNode:
     path, *args = command.split()
-    return ExecNode(
+    if path in BUILTIN_COMMANDS:
+        return BuiltinCommandNode(
+            execute_path=path,
+            arguments=[path]+args,
+        )
+    return CommandNode(
         execute_path=path,
         arguments=[path]+args,
     )
