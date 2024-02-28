@@ -3,7 +3,7 @@ import signal
 
 from .console import error as show_error 
 from .console import prompt_user_to_input
-from .tree import parse
+from .parser import parse
 
 
 def setup():
