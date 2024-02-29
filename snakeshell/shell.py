@@ -2,7 +2,7 @@ import sys
 import signal
 
 from .console import error as show_error 
-from .console import prompt_user_to_input
+from .console import prompt
 from .parser import parse
 
 
@@ -17,7 +17,7 @@ def setup():
 def loop():
     # Start an infinite loop to continuously accept commands.
     while True:
-        line = prompt_user_to_input()
+        line = prompt()
         if not line:
             break
         line = line.strip()

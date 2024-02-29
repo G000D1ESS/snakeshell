@@ -41,7 +41,7 @@ def prompt_msg() -> str:
     return f'\033[34;1m{dirname}\033[0m $ '
 
 
-def prompt_user_to_input() -> str:
+def prompt() -> str:
     """
     Displays a prompt message to the user and requests
     their input, returning the user's input line.
