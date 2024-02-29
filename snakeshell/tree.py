@@ -3,6 +3,22 @@ import sys
 import signal
 
 
+def execute(path: str, args: list[str]):
+
+    # Set the signal handler for SIGINT (Ctrl+C) to the default handling.
+    # This ensures that the subprocess will terminate on a SIGINT signal.
+    signal.signal(
+        signal.SIGINT,
+        signal.SIG_DFL,
+    )
+
+    # Replace the current process with a new process running the command.
+    os.execvp(
+        file=path,
+        args=args,
+    )
+
+
 class ShellNode:
 
     def __init__(self):
@@ -33,16 +49,9 @@ class CommandNode(ShellNode):
         pid = os.fork()
         if pid == 0:
             # Child process.
-            # Set the signal handler for SIGINT (Ctrl+C) to the default handling.
-            # This ensures that the subprocess will terminate on a SIGINT signal.
-            signal.signal(
-                signal.SIGINT,
-                signal.SIG_DFL,
-            )
-
             # Replace the current process with a new process running the command.
-            os.execvp(
-                file=self.execute_path,
+            execute(
+                path=self.execute_path,
                 args=self.arguments,
             )
 
@@ -62,6 +71,12 @@ class BuiltinCommandNode(CommandNode):
                 path = os.path.normpath(path)
                 path = os.path.expanduser(path)
                 os.chdir(path)
+            case 'exec':
+                path, *args = self.arguments[1:]
+                execute(
+                    path=path,
+                    args=[path]+args,
+                )
             case 'exit':
                 sys.exit(0)
         return 0

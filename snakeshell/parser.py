@@ -10,7 +10,11 @@ from .tree import (
 )
 
 
-BUILTIN_COMMANDS = {'cd', 'exit'}
+BUILTIN_COMMANDS = {
+    'cd',
+    'exec',
+    'exit',
+}
 
 
 class Operators(str, Enum):
