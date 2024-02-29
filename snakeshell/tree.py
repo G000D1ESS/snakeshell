@@ -3,20 +3,16 @@ import sys
 import signal
 
 
-def execute(path: str, args: list[str]):
-
-    # Set the signal handler for SIGINT (Ctrl+C) to the default handling.
-    # This ensures that the subprocess will terminate on a SIGINT signal.
-    signal.signal(
-        signal.SIGINT,
-        signal.SIG_DFL,
-    )
-
-    # Replace the current process with a new process running the command.
-    os.execvp(
-        file=path,
-        args=args,
-    )
+def fork() -> int:
+    pid = os.fork()
+    if pid == 0:
+        # Set the signal handler for SIGINT (Ctrl+C) to the default handling.
+        # This ensures that the subprocess will terminate on a SIGINT signal.
+        signal.signal(
+            signal.SIGINT,
+            signal.SIG_DFL,
+        )
+    return pid
 
 
 class ShellNode:
@@ -46,12 +42,13 @@ class CommandNode(ShellNode):
         self.arguments = arguments
 
     def execute(self) -> int:
-        pid = os.fork()
+        pid = fork()
         if pid == 0:
             # Child process.
-            # Replace the current process with a new process running the command.
-            execute(
-                path=self.execute_path,
+            # Replace the current process with a new
+            # process running the command.
+            os.execvp(
+                file=self.execute_path,
                 args=self.arguments,
             )
 
@@ -72,9 +69,18 @@ class BuiltinCommandNode(CommandNode):
                 path = os.path.expanduser(path)
                 os.chdir(path)
             case 'exec':
+                # Set the signal handler for SIGINT (Ctrl+C) to
+                # the default handling. This ensures that the process
+                # will terminate on a SIGINT signal.
+                signal.signal(
+                    signal.SIGINT,
+                    signal.SIG_DFL,
+                )
+                # Replace the current process with a new
+                # process running the command.
                 path, *args = self.arguments[1:]
-                execute(
-                    path=path,
+                os.execvp(
+                    file=path,
                     args=[path]+args,
                 )
             case 'exit':
