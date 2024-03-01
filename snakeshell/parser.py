@@ -1,4 +1,6 @@
 from enum import Enum
+from typing import Callable
+from functools import wraps
 
 from .tree import (
     ShellNode,
@@ -26,6 +28,23 @@ class Operators(str, Enum):
     SUB_END = ')'
 
 
+def handle_subshell(func):
+    @wraps(func)
+    def wrapped(command: str) -> ShellNode:
+        command = command.strip()
+        is_subshell = command.startswith(Operators.SUB_START)
+        is_subshell &= command.endswith(Operators.SUB_END)
+        if is_subshell:
+            command = command[1:-1]
+            command = command.strip()
+            root = SubshellNode()
+            root.add(parse(command))
+            return root
+        return func(command)
+    return wrapped
+
+
+@handle_subshell
 def parse(command: str) -> ShellNode:
 
     root = ListNode()
@@ -34,60 +53,102 @@ def parse(command: str) -> ShellNode:
     i = 0
     unclosed = 0
     subcommand = ''
-    is_subshell = False
 
     while i < len(command):
+
+        subcommand += command[i]
+
         if Operators.SUB_START == command[i]:
             unclosed += 1
-            is_subshell = True
         elif Operators.SUB_END == command[i]:
             unclosed -= 1
-        elif not unclosed and Operators.LIST == command[i]:
-            subcommand = subcommand.strip()
-            if is_subshell:
-                root.add(parse_subshell(subcommand))
-            else:
-                root.add(parse_or_list(subcommand))
+
+        if unclosed:
+            i += 1
+            continue
+
+        if Operators.LIST == command[i]:
+            subcommand = subcommand[:-1]
+            root.add(parse_or_list(subcommand))
             subcommand = ''
-            is_subshell = False
-        else:
-            subcommand += command[i]
         i += 1
 
-    if subcommand:
-        subcommand = subcommand.strip()
-        if is_subshell:
-            root.add(parse_subshell(subcommand))
-        else:
-            root.add(parse_or_list(subcommand))
+    if subcommand.strip():
+        root.add(parse_or_list(subcommand))
     return root
 
 
-def parse_subshell(command_line: str) -> ShellNode:
-    root = SubshellNode()
-    root.add(parse(command_line))
-    return root
+@handle_subshell
+def parse_or_list(command: str) -> ShellNode:
 
-
-def parse_or_list(command_block: str) -> ShellNode:
     root = OrListNode()
-    for command_block in command_block.split(Operators.OR_LIST):
-        command_block = command_block.strip()
-        command_block = parse_and_list(command_block)
-        root.add(command_block)
+    command = command.strip()
+
+    i = 0
+    unclosed = 0
+    subcommand = ''
+
+    while i < len(command):
+
+        subcommand += command[i]
+
+        if Operators.SUB_START == command[i]:
+            unclosed += 1
+        elif Operators.SUB_END == command[i]:
+            unclosed -= 1
+
+        if unclosed:
+            i += 1
+            continue
+
+        if i > 0 and Operators.OR_LIST == command[i-1]+command[i]:
+            subcommand = subcommand[:-2]
+            root.add(parse_and_list(subcommand))
+            subcommand = ''
+        i += 1
+
+    if subcommand.strip():
+        root.add(parse_and_list(subcommand))
     return root
 
 
-def parse_and_list(command_block: str) -> ShellNode:
+@handle_subshell
+def parse_and_list(command: str) -> ShellNode:
+
     root = AndListNode()
-    for command in command_block.split(Operators.AND_LIST):
-        command = command.strip()
-        command = parse_command(command)
-        root.add(command)
+    command = command.strip()
+
+    i = 0
+    unclosed = 0
+    subcommand = ''
+
+    while i < len(command):
+
+        subcommand += command[i]
+
+        if Operators.SUB_START == command[i]:
+            unclosed += 1
+        elif Operators.SUB_END == command[i]:
+            unclosed -= 1
+
+        if unclosed:
+            i += 1
+            continue
+
+        if i > 0 and Operators.AND_LIST == command[i-1]+command[i]:
+            subcommand = subcommand[:-2]
+            root.add(parse_command(subcommand))
+            subcommand = ''
+        i += 1
+
+    if subcommand.strip():
+        root.add(parse_command(subcommand))
     return root
 
 
+@handle_subshell
 def parse_command(command: str) -> ShellNode:
+    command = command.strip()
     path, *args = command.split()
     if path in BUILTIN_COMMANDS:
         return BuiltinCommandNode(
