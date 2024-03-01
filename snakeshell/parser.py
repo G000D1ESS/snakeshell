@@ -6,6 +6,7 @@ from .tree import (
     OrListNode,
     AndListNode,
     CommandNode,
+    SubshellNode,
     BuiltinCommandNode,
 )
 
@@ -21,14 +22,47 @@ class Operators(str, Enum):
     LIST = ';'
     OR_LIST = '||'
     AND_LIST = '&&'
+    GROUP_START = '('
+    GROUP_END = ')'
 
 
-def parse(user_input: str) -> ShellNode:
+def parse(command_line: str) -> ShellNode:
+
     root = ListNode()
-    for command_block in user_input.split(Operators.LIST):
+
+    command_block = ''
+    unclosed_groups = 0
+    parser = parse_or_list
+
+    for ch in command_line:
+        match ch:
+            case Operators.GROUP_START:
+                unclosed_groups += 1
+                parser = parse_subshell
+            case Operators.GROUP_END:
+                unclosed_groups -= 1
+            case Operators.LIST:
+                if unclosed_groups:
+                    command_block += ch
+                if not unclosed_groups:
+                    command_block = command_block.strip()
+                    command_block = parser(command_block)
+                    root.add(command_block)
+                    parser = parse_or_list
+                    command_block = ''
+            case _:
+                command_block += ch
+
+    if command_block:
         command_block = command_block.strip()
-        command_block = parse_or_list(command_block)
+        command_block = parser(command_block)
         root.add(command_block)
+    return root
+
+
+def parse_subshell(command_block):
+    root = SubshellNode()
+    root.add(parse(command_block))
     return root
 
 

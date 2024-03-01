@@ -30,6 +30,23 @@ class ShellNode:
         return exit_code
 
 
+class SubshellNode(ShellNode):
+
+    def execute(self) -> int:
+        pid = fork()
+        if pid == 0:
+            # Child process.
+            exit_status: int = 0
+            for child in self.children:
+                exit_status = child.execute()
+            sys.exit(exit_status)
+
+        # Parent process.
+        _, wait_status = os.wait()
+        exit_code = os.waitstatus_to_exitcode(wait_status)
+        return exit_code
+
+
 class CommandNode(ShellNode):
 
     def __init__(
