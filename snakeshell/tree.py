@@ -101,7 +101,10 @@ class BuiltinCommandNode(CommandNode):
                     args=[path]+args,
                 )
             case 'exit':
-                sys.exit(0)
+                exit_code = 0
+                if len(self.arguments) >= 2:
+                    exit_code = int(self.arguments[1])
+                sys.exit(exit_code)
         return 0
 
 
