@@ -46,6 +46,13 @@ def prompt() -> str:
     Displays a prompt message to the user and requests
     their input, returning the user's input line.
     """
+    command = ''
     write(prompt_msg())
-    return readline()
+    while True:
+        line = readline()
+        command += line
+        if command.endswith('\\\n'):
+            command = command[:-2]
+            continue
+        return command
 
