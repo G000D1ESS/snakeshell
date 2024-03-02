@@ -9,6 +9,7 @@ from .tree import (
     AndListNode,
     CommandNode,
     SubshellNode,
+    InvertExitCodeNode,
     BuiltinCommandNode,
 )
 
@@ -22,10 +23,25 @@ BUILTIN_COMMANDS = {
 
 class Operators(str, Enum):
     LIST = ';'
+    INVERT = '! '
     OR_LIST = '||'
     AND_LIST = '&&'
     SUB_START = '('
     SUB_END = ')'
+
+
+def handle_inverted(func):
+    @wraps(func)
+    def wrapped(command: str) -> ShellNode:
+        command = command.strip()
+        if command.startswith(Operators.INVERT):
+            command = command[2:]
+            command = command.strip()
+            root = InvertExitCodeNode()
+            root.add(func(command))
+            return root
+        return func(command)
+    return wrapped
 
 
 def handle_subshell(func):
@@ -146,6 +162,7 @@ def parse_and_list(command: str) -> ShellNode:
     return root
 
 
+@handle_inverted
 @handle_subshell
 def parse_command(command: str) -> ShellNode:
     command = command.strip()

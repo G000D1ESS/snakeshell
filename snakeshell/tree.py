@@ -47,6 +47,16 @@ class SubshellNode(ShellNode):
         return exit_code
 
 
+class InvertExitCodeNode(ShellNode):
+
+    def execute(self) -> int:
+        exit_code: int = 0
+        for child in self.children:
+            exit_code = child.execute()
+        exit_code = int(exit_code == 0)
+        return exit_code
+
+
 class CommandNode(ShellNode):
 
     def __init__(
