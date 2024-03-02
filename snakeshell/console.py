@@ -1,5 +1,12 @@
 import os
 
+from .parser import Operators
+
+
+OR_CONTINUE = Operators.OR_LIST + Operators.NEWLINE
+AND_CONTINUE = Operators.AND_LIST + Operators.NEWLINE
+BACKSLASH_CONTINUE = Operators.BACKSLASH + Operators.NEWLINE
+
 
 def write(data: str) -> None:
     """
@@ -51,8 +58,12 @@ def prompt() -> str:
     while True:
         line = readline()
         command += line
-        if command.endswith('\\\n'):
+        if command.endswith(BACKSLASH_CONTINUE):
             command = command[:-2]
+            continue
+        if command.endswith(AND_CONTINUE) or command.endswith(OR_CONTINUE):
+            command = command[:-1]
+            command += ' '
             continue
         return command
 

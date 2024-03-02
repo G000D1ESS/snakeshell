@@ -24,8 +24,10 @@ BUILTIN_COMMANDS = {
 class Operators(str, Enum):
     LIST = ';'
     INVERT = '! '
+    NEWLINE = '\n'
     OR_LIST = '||'
     AND_LIST = '&&'
+    BACKSLASH = '\\'
     SUB_START = '('
     SUB_END = ')'
 
