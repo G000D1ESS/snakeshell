@@ -1,11 +1,9 @@
 import os
 
-from .parser import Operators
 
-
-OR_CONTINUE = Operators.OR_LIST + Operators.NEWLINE
-AND_CONTINUE = Operators.AND_LIST + Operators.NEWLINE
-BACKSLASH_CONTINUE = Operators.BACKSLASH + Operators.NEWLINE
+OR_CONTINUE = '||\n'
+AND_CONTINUE = '&&\n'
+BACKSLASH_CONTINUE = '\\\n'
 
 
 def write(data: str) -> None:

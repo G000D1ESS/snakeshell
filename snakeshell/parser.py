@@ -1,6 +1,4 @@
-from enum import Enum
-from typing import Callable
-from functools import wraps
+import tatsu
 
 from .tree import (
     ShellNode,
@@ -21,161 +19,126 @@ BUILTIN_COMMANDS = {
 }
 
 
-class Operators(str, Enum):
-    LIST = ';'
-    INVERT = '! '
-    NEWLINE = '\n'
-    OR_LIST = '||'
-    AND_LIST = '&&'
-    BACKSLASH = '\\'
-    SUB_START = '('
-    SUB_END = ')'
+GRAMMAR = r'''
+start
+    =
+    sequential_list
+    ;
 
 
-def handle_inverted(func):
-    @wraps(func)
-    def wrapped(command: str) -> ShellNode:
-        command = command.strip()
-        if command.startswith(Operators.INVERT):
-            command = command[2:]
-            command = command.strip()
-            root = InvertExitCodeNode()
-            root.add(func(command))
-            return root
-        return func(command)
-    return wrapped
+sequential_list
+    =
+    sequence:or_list {';' sequence+:or_list}* [';']
+    ;
 
 
-def handle_subshell(func):
-    @wraps(func)
-    def wrapped(command: str) -> ShellNode:
-        command = command.strip()
-        is_subshell = command.startswith(Operators.SUB_START)
-        is_subshell &= command.endswith(Operators.SUB_END)
-        if is_subshell:
-            command = command[1:-1]
-            command = command.strip()
-            root = SubshellNode()
-            root.add(parse(command))
-            return root
-        return func(command)
-    return wrapped
+or_list
+    =
+    sequence:and_list {'||' sequence+:and_list}*
+    ;
 
 
-@handle_subshell
-def parse(command: str) -> ShellNode:
-
-    root = ListNode()
-    command = command.strip()
-
-    i = 0
-    unclosed = 0
-    subcommand = ''
-
-    while i < len(command):
-
-        subcommand += command[i]
-
-        if Operators.SUB_START == command[i]:
-            unclosed += 1
-        elif Operators.SUB_END == command[i]:
-            unclosed -= 1
-
-        if unclosed:
-            i += 1
-            continue
-
-        if Operators.LIST == command[i]:
-            subcommand = subcommand[:-1]
-            root.add(parse_or_list(subcommand))
-            subcommand = ''
-        i += 1
-
-    if subcommand.strip():
-        root.add(parse_or_list(subcommand))
-    return root
+and_list
+    =
+    sequence:expression {'&&' sequence+:expression}*
+    ;
 
 
-@handle_subshell
-def parse_or_list(command: str) -> ShellNode:
-
-    root = OrListNode()
-    command = command.strip()
-
-    i = 0
-    unclosed = 0
-    subcommand = ''
-
-    while i < len(command):
-
-        subcommand += command[i]
-
-        if Operators.SUB_START == command[i]:
-            unclosed += 1
-        elif Operators.SUB_END == command[i]:
-            unclosed -= 1
-
-        if unclosed:
-            i += 1
-            continue
-
-        if i > 0 and Operators.OR_LIST == command[i-1]+command[i]:
-            subcommand = subcommand[:-2]
-            root.add(parse_and_list(subcommand))
-            subcommand = ''
-        i += 1
-
-    if subcommand.strip():
-        root.add(parse_and_list(subcommand))
-    return root
+subshell
+    =
+    '(' subshell:start ')'
+    ;
 
 
-@handle_subshell
-def parse_and_list(command: str) -> ShellNode:
-
-    root = AndListNode()
-    command = command.strip()
-
-    i = 0
-    unclosed = 0
-    subcommand = ''
-
-    while i < len(command):
-
-        subcommand += command[i]
-
-        if Operators.SUB_START == command[i]:
-            unclosed += 1
-        elif Operators.SUB_END == command[i]:
-            unclosed -= 1
-
-        if unclosed:
-            i += 1
-            continue
-
-        if i > 0 and Operators.AND_LIST == command[i-1]+command[i]:
-            subcommand = subcommand[:-2]
-            root.add(parse_command(subcommand))
-            subcommand = ''
-        i += 1
-
-    if subcommand.strip():
-        root.add(parse_command(subcommand))
-    return root
+expression
+    =
+    | subshell
+    | inverted
+    | command
+    ; 
 
 
-@handle_inverted
-@handle_subshell
-def parse_command(command: str) -> ShellNode:
-    command = command.strip()
-    path, *args = command.split()
-    if path in BUILTIN_COMMANDS:
-        return BuiltinCommandNode(
+inverted
+    =
+    '! ' ~ inverted:command
+    ;
+
+
+command
+    =
+    path:string args:{ string }*
+    ;
+
+
+string
+    =
+    | "'" @:/[^']*/ "'"
+    | /[^\s'";()|&]+/
+    ;
+'''
+
+
+# Setup PEG parser
+parser = tatsu.compile(GRAMMAR)
+
+
+class ShellSemantics:
+
+    def sequential_list(self, ast):
+        if isinstance(ast.sequence, list):
+            lst = ListNode()
+            for child in ast.sequence:
+                lst.add(child)
+            return lst
+        return ast.sequence
+
+    def and_list(self, ast):
+        if isinstance(ast.sequence, list):
+            lst = AndListNode()
+            for child in ast.sequence:
+                lst.add(child)
+            return lst
+        return ast.sequence
+
+    def or_list(self, ast):
+        if isinstance(ast.sequence, list):
+            lst = OrListNode()
+            for child in ast.sequence:
+                lst.add(child)
+            return lst
+        return ast.sequence
+
+    def subshell(self, ast):
+        root = SubshellNode()
+        root.add(ast.subshell)
+        return root
+
+    def inverted(self, ast):
+        root = InvertExitCodeNode()
+        root.add(ast.inverted)
+        return root
+
+    def command(self, ast):
+        path = ast.path
+        args = ast.args
+        if path in BUILTIN_COMMANDS:
+            return BuiltinCommandNode(
+                execute_path=path,
+                arguments=[path]+args,
+            )
+        return CommandNode(
             execute_path=path,
             arguments=[path]+args,
         )
-    return CommandNode(
-        execute_path=path,
-        arguments=[path]+args,
+
+    def string(self, ast):
+        return str(ast)
+
+
+def parse(command: str) -> ShellNode:
+    node = parser.parse(
+        command,
+        semantics=ShellSemantics(),
     )
+    return node
 
