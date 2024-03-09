@@ -1,24 +1,55 @@
-
-
-start = commands;
-
-
-commands
+start
     =
-    commands:command {';' commands+:command}* [';']
+    sequential_list
+    ;
+
+
+sequential_list
+    =
+    sequence:or_list {';' sequence+:or_list}* [';']
+    ;
+
+
+or_list
+    =
+    sequence:and_list {'||' sequence+:and_list}*
+    ;
+
+
+and_list
+    =
+    sequence:expression {'&&' sequence+:expression}*
+    ;
+
+
+subshell
+    =
+    '(' subshell:start ')'
+    ;
+
+
+expression
+    =
+    | subshell
+    | inverted
+    | command
+    ; 
+
+
+inverted
+    =
+    '! ' ~ inverted:command
     ;
 
 
 command
     =
-    exec:string args:{ string }*
+    path:string args:{ string }*
     ;
-
 
 
 string
     =
     | "'" @:/[^']*/ "'"
-    | /[^\s'";]+/
+    | /[^\s'";()|&]+/
     ;
-
