@@ -1,0 +1,24 @@
+
+
+start = commands;
+
+
+commands
+    =
+    commands:command {';' commands+:command}* [';']
+    ;
+
+
+command
+    =
+    exec:string args:{ string }*
+    ;
+
+
+
+string
+    =
+    | "'" @:/[^']*/ "'"
+    | /[^\s'";]+/
+    ;
+
