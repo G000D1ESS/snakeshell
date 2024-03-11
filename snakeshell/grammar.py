@@ -1,5 +1,3 @@
-
-
 GRAMMAR = r'''
 start
     =
