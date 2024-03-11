@@ -21,7 +21,7 @@ cd snakeshell
 3. Run the installation:
 
 ```bash
-python3 setup.py install
+pip install .
 ```
 
 ## Usage
@@ -31,7 +31,7 @@ To use this Unix Shell, follow these steps:
 1. Start the shell by executing the command:
 
 ```bash
-snakeshell
+snake
 ```
 
 2. Enter commands in the interactive shell and press Enter to execute them.
