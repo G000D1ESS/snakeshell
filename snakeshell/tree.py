@@ -15,30 +15,27 @@ def fork() -> int:
     return pid
 
 
-class ShellNode:
+class Node:
 
-    def __init__(self):
-        self.children: list[ShellNode] = []
-
-    def add(self, node: 'ShellNode'):
-        self.children.append(node)
+    def __init__(
+        self,
+        left,
+        right,
+    ):
+        self.left: Node | None = left
+        self.right: Node | None = right
 
     def execute(self) -> int:
-        exit_code: int = 0
-        for child in self.children:
-            exit_code = child.execute()
-        return exit_code
+        raise NotImplementedError
 
 
-class SubshellNode(ShellNode):
+class SubshellNode(Node):
 
     def execute(self) -> int:
         pid = fork()
         if pid == 0:
             # Child process.
-            exit_status: int = 0
-            for child in self.children:
-                exit_status = child.execute()
+            exit_status = self.left.execute()
             sys.exit(exit_status)
 
         # Parent process.
@@ -47,24 +44,22 @@ class SubshellNode(ShellNode):
         return exit_code
 
 
-class InvertExitCodeNode(ShellNode):
+class InvertExitCodeNode(Node):
 
     def execute(self) -> int:
-        exit_code: int = 0
-        for child in self.children:
-            exit_code = child.execute()
+        exit_code = self.left.execute()
         exit_code = int(exit_code == 0)
         return exit_code
 
 
-class CommandNode(ShellNode):
+class CommandNode(Node):
 
     def __init__(
         self,
         execute_path: str,
         arguments: list[str],
     ):
-        super().__init__()
+        super().__init__(left=None, right=None)
         self.execute_path = execute_path
         self.arguments = arguments
 
@@ -118,28 +113,27 @@ class BuiltinCommandNode(CommandNode):
         return 0
 
 
-class ListNode(ShellNode):
-    pass
-
-
-class OrListNode(ListNode):
+class ListNode(Node):
 
     def execute(self) -> int:
-        exit_code: int = 0
-        for child in self.children:
-            exit_code = child.execute()
-            if exit_code == 0:
-                return exit_code
-        return exit_code
+        self.left.execute()
+        return self.right.execute()
 
 
-class AndListNode(ListNode):
+class OrNode(ListNode):
 
     def execute(self) -> int:
-        exit_code: int = 0
-        for child in self.children:
-            exit_code = child.execute()
-            if exit_code != 0:
-                return exit_code
-        return exit_code
+        exit_code = self.left.execute()
+        if exit_code == 0:
+            return exit_code
+        return self.right.execute()
+
+
+class AndNode(ListNode):
+
+    def execute(self) -> int:
+        exit_code = self.left.execute()
+        if exit_code != 0:
+            return exit_code
+        return self.right.execute()
 

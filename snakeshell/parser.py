@@ -1,10 +1,11 @@
 import tatsu
 
+from .grammar import GRAMMAR
 from .tree import (
-    ShellNode,
+    Node,
     ListNode,
-    OrListNode,
-    AndListNode,
+    OrNode,
+    AndNode,
     CommandNode,
     SubshellNode,
     InvertExitCodeNode,
@@ -19,104 +20,42 @@ BUILTIN_COMMANDS = {
 }
 
 
-GRAMMAR = r'''
-start
-    =
-    sequential_list
-    ;
-
-
-sequential_list
-    =
-    sequence:or_list {';' sequence+:or_list}* [';']
-    ;
-
-
-or_list
-    =
-    sequence:and_list {'||' sequence+:and_list}*
-    ;
-
-
-and_list
-    =
-    sequence:expression {'&&' sequence+:expression}*
-    ;
-
-
-subshell
-    =
-    '(' subshell:start ')'
-    ;
-
-
-expression
-    =
-    | subshell
-    | inverted
-    | command
-    ; 
-
-
-inverted
-    =
-    '! ' ~ inverted:command
-    ;
-
-
-command
-    =
-    path:string args:{ string }*
-    ;
-
-
-string
-    =
-    | "'" @:/[^']*/ "'"
-    | /[^\s'";()|&]+/
-    ;
-'''
-
-
 # Setup PEG parser
-parser = tatsu.compile(GRAMMAR)
+_parser = tatsu.compile(GRAMMAR)
 
 
 class ShellSemantics:
 
-    def sequential_list(self, ast):
-        if isinstance(ast.sequence, list):
-            lst = ListNode()
-            for child in ast.sequence:
-                lst.add(child)
-            return lst
-        return ast.sequence
+    def sequential(self, ast):
+        return ListNode(
+            left=ast.left,
+            right=ast.right,
+        )
 
-    def and_list(self, ast):
-        if isinstance(ast.sequence, list):
-            lst = AndListNode()
-            for child in ast.sequence:
-                lst.add(child)
-            return lst
-        return ast.sequence
-
-    def or_list(self, ast):
-        if isinstance(ast.sequence, list):
-            lst = OrListNode()
-            for child in ast.sequence:
-                lst.add(child)
-            return lst
-        return ast.sequence
+    def and_or(self, ast):
+        left, op, right = ast
+        if op == '&&':
+            return AndNode(
+                left=left,
+                right=right,
+            )
+        if op == '||':
+            return OrNode(
+                left=left,
+                right=right,
+            )
 
     def subshell(self, ast):
-        root = SubshellNode()
-        root.add(ast.subshell)
-        return root
+        return SubshellNode(
+            left=ast.subshell,
+            right=None,
+        )
 
     def inverted(self, ast):
-        root = InvertExitCodeNode()
-        root.add(ast.inverted)
-        return root
+        return InvertExitCodeNode(
+            left=ast.inverted,
+            right=None,
+        )
 
     def command(self, ast):
         path = ast.path
@@ -135,8 +74,8 @@ class ShellSemantics:
         return str(ast)
 
 
-def parse(command: str) -> ShellNode:
-    node = parser.parse(
+def parse(command: str) -> Node:
+    node = _parser.parse(
         command,
         semantics=ShellSemantics(),
     )
