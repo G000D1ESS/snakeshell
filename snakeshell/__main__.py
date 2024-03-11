@@ -1,4 +1,4 @@
-from .shell import run_shell
+from snakeshell.shell import run_shell
 
 
 if __name__ == '__main__':

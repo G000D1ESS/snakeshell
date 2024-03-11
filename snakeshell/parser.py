@@ -1,7 +1,7 @@
 import tatsu
 
-from .grammar import GRAMMAR
-from .tree import (
+from snakeshell.grammar import GRAMMAR
+from snakeshell.tree import (
     Node,
     ListNode,
     OrNode,

@@ -1,9 +1,9 @@
 import sys
 import signal
 
-from .console import error as show_error 
-from .console import prompt
-from .parser import parse
+from snakeshell.console import error as show_error 
+from snakeshell.console import prompt
+from snakeshell.parser import parse
 
 
 def setup():
