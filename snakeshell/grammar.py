@@ -7,7 +7,7 @@ start
 global
     =
     | sequential
-    | expr
+    | @:expr [';']
     ;
 
 sequential
