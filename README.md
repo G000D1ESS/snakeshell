@@ -21,7 +21,7 @@ cd snakeshell
 3. Run the installation:
 
 ```bash
-pip install .
+python3 -m pip install .
 ```
 
 ## Usage
