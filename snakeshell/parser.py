@@ -7,6 +7,7 @@ from snakeshell.tree import (
     OrNode,
     AndNode,
     CommandNode,
+    PipelineNode,
     SubshellNode,
     InvertExitCodeNode,
     BuiltinCommandNode,
@@ -30,6 +31,13 @@ class ShellSemantics:
         return ListNode(
             left=ast.left,
             right=ast.right,
+        )
+
+    def pipeline(self, ast):
+        left, _, right = ast
+        return PipelineNode(
+            left=left,
+            right=right,
         )
 
     def and_or(self, ast):

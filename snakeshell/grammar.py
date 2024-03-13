@@ -10,6 +10,11 @@ global
     | @:expr [';']
     ;
 
+subshell
+    =
+    '(' ~ subshell:global ')'
+    ;
+
 sequential
     =
     | left:expr ';' right:sequential
@@ -22,14 +27,16 @@ and_or
     | atom ('||'|'&&') atom
     ;
 
-subshell
+pipeline
     =
-    '(' ~ subshell:global ')'
+    | atom '|' pipeline
+    | atom '|' atom
     ;
 
 expr
     =
     | and_or
+    | pipeline
     | atom
     ;
 

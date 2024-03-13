@@ -137,3 +137,42 @@ class AndNode(ListNode):
             return exit_code
         return self.right.execute()
 
+
+class PipelineNode(Node):
+
+    def execute(self) -> int:
+
+        r, w = os.pipe()
+
+        os.set_inheritable(r, True)
+        os.set_inheritable(w, True)
+
+        fst_pid = fork()
+        if fst_pid == 0:
+            os.close(r)
+            os.dup2(w, 1)
+            sys.exit(
+                self.left.execute()
+            )
+
+        snd_pid = fork()
+        if snd_pid == 0:
+            os.close(w)
+            os.dup2(r, 0)
+            sys.exit(
+                self.right.execute()
+            )
+
+        os.close(r)
+        os.close(w)
+
+        _, fst_status = os.wait()
+        _, snd_status = os.wait()
+
+        exit_code = os.waitstatus_to_exitcode(fst_status)
+        if exit_code != 0:
+            return exit_code
+
+        exit_code = os.waitstatus_to_exitcode(snd_status)
+        return exit_code
+
