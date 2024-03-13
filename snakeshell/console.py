@@ -57,9 +57,11 @@ def prompt() -> str:
         line = readline()
         command += line
         if command.endswith(BACKSLASH_CONTINUE):
+            write('> ')
             command = command[:-2]
             continue
         if command.endswith(AND_CONTINUE) or command.endswith(OR_CONTINUE):
+            write('> ')
             command = command[:-1]
             command += ' '
             continue
