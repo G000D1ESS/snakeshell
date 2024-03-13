@@ -12,13 +12,13 @@ global
 
 subshell
     =
-    '(' ~ subshell:global ')'
+    '(' @:global ')'
     ;
 
 sequential
     =
-    | left:expr ';' right:sequential
-    | left:expr ';' right:expr
+    | expr ';' sequential
+    | expr ';' expr
     ;
 
 and_or
@@ -42,7 +42,7 @@ expr
 
 inverted
     =
-    '! ' ~ inverted:command
+    '! ' ~ @:command
     ;
 
 atom

@@ -28,9 +28,10 @@ _parser = tatsu.compile(GRAMMAR)
 class ShellSemantics:
 
     def sequential(self, ast):
+        left, _, right = ast
         return ListNode(
-            left=ast.left,
-            right=ast.right,
+            left=left,
+            right=right,
         )
 
     def pipeline(self, ast):
@@ -55,13 +56,13 @@ class ShellSemantics:
 
     def subshell(self, ast):
         return SubshellNode(
-            left=ast.subshell,
+            left=ast,
             right=None,
         )
 
     def inverted(self, ast):
         return InvertExitCodeNode(
-            left=ast.inverted,
+            left=ast,
             right=None,
         )
 
