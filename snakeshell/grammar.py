@@ -6,7 +6,7 @@ start
 
 global
     =
-    | sequential
+    | @:sequential [';']
     | @:expr [';']
     ;
 
