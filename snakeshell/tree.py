@@ -56,39 +56,45 @@ class PipelineNode(Node):
 
     def execute(self) -> int:
 
+        # Open pipe
         r, w = os.pipe()
-
         os.set_inheritable(r, True)
         os.set_inheritable(w, True)
 
-        fst_pid = fork()
-        if fst_pid == 0:
+        if fork() == 0:
+            # Child process.
+            # Write stdout into pipe.
             os.close(r)
             os.dup2(w, 1)
-            sys.exit(
-                self.left.execute()
-            )
+            code = self.left.execute()
+            sys.exit(code)
 
-        snd_pid = fork()
-        if snd_pid == 0:
+        if fork() == 0:
+            # Child process.
+            # Read stdin from pipe.
             os.close(w)
             os.dup2(r, 0)
-            sys.exit(
-                self.right.execute()
-            )
+            code = self.right.execute()
+            sys.exit(code)
 
+        # Parent process.
+
+        # Close pipe.
         os.close(r)
         os.close(w)
 
-        _, fst_status = os.wait()
-        _, snd_status = os.wait()
+        # Wait children.
+        statuses = [
+            os.wait(),
+            os.wait(),
+        ]
 
-        exit_code = os.waitstatus_to_exitcode(fst_status)
-        if exit_code != 0:
-            return exit_code
-
-        exit_code = os.waitstatus_to_exitcode(snd_status)
-        return exit_code
+        # Check process exit codes
+        for _, status in statuses:
+            exit_code = os.waitstatus_to_exitcode(status)
+            if exit_code != 0:
+                return exit_code
+        return 0
 
 
 class CommandNode(Node):
