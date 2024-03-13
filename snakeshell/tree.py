@@ -165,7 +165,7 @@ class ListNode(Node):
         return self.right.execute()
 
 
-class OrNode(ListNode):
+class OrNode(Node):
 
     def execute(self) -> int:
         exit_code = self.left.execute()
@@ -174,7 +174,7 @@ class OrNode(ListNode):
         return self.right.execute()
 
 
-class AndNode(ListNode):
+class AndNode(Node):
 
     def execute(self) -> int:
         exit_code = self.left.execute()
