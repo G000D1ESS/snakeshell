@@ -47,15 +47,15 @@ inverted
 
 atom
     =
-    | subshell
-    | inverted
     | redirected
+    | inverted
+    | subshell
     | command
     ;
 
 redirected
     =
-    | redirected ~ redirection
+    | redirected redirection
     | command redirection
     ;
 
