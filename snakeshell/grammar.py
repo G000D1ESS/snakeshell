@@ -66,12 +66,12 @@ redirection
 
 redirection_start
     =
-    | fd:[/[0-9]/] type:'>>'
-    | fd:[/[0-9]/] type:'<>'
-    | fd:[/[0-9]/] type:'<&'
-    | fd:[/[0-9]/] type:'&>'
-    | fd:[/[0-9]/] type:'>'
-    | fd:[/[0-9]/] type:'<'
+    | fd:[/[0-9]/] !/\s+/ type:'>>'
+    | fd:[/[0-9]/] !/\s+/ type:'<>'
+    | fd:[/[0-9]/] !/\s+/ type:'<&'
+    | fd:[/[0-9]/] !/\s+/ type:'&>'
+    | fd:[/[0-9]/] !/\s+/ type:'>'
+    | fd:[/[0-9]/] !/\s+/ type:'<'
     ;
 
 command
