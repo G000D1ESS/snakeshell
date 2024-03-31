@@ -23,8 +23,8 @@ sequential
 
 and_or
     =
-    | and_or ('||'|'&&') atom
-    | atom ('||'|'&&') atom
+    | and_or ('||'|'&&') (pipeline|atom)
+    | (pipeline|atom) ('||'|'&&') (pipeline|atom)
     ;
 
 pipeline
