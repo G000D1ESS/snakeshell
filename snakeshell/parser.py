@@ -7,6 +7,7 @@ from snakeshell.tree import (
     OrNode,
     AndNode,
     CommandNode,
+    RedirectNode,
     PipelineNode,
     SubshellNode,
     InvertExitCodeNode,
@@ -64,6 +65,15 @@ class ShellSemantics:
         return InvertExitCodeNode(
             left=ast,
             right=None,
+        )
+
+    def redirected(self, ast):
+        node, options = ast
+        return RedirectNode(
+            executable=node,
+            filename=options['filename'],
+            fd=options['operator']['fd'],
+            operator=options['operator']['type'],
         )
 
     def command(self, ast):

@@ -61,7 +61,7 @@ redirected
 
 redirection
     =
-    operation:redirection_start filename:filename
+    operator:redirection_start filename:filename
     ;
 
 redirection_start

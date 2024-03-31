@@ -158,6 +158,70 @@ class BuiltinCommandNode(CommandNode):
         return 0
 
 
+class RedirectNode(Node):
+
+    DEFAULTS = {
+        '<': {
+            'fd': 0,
+            'mode': os.O_RDONLY,
+        },
+        '>': {
+            'fd': 1,
+            'mode': os.O_CREAT|os.O_TRUNC|os.O_WRONLY,
+        },
+        '>>': {
+            'fd': 1,
+            'mode': os.O_CREAT|os.O_APPEND|os.O_WRONLY,
+        },
+        '<>': {
+            'fd': 0,
+            'mode': os.O_CREAT|os.O_RDWR,
+        },
+    }
+
+    def __init__(
+        self,
+        fd: str | None,
+        filename: str,
+        operator: str,
+        executable: Node,
+    ):
+        super().__init__(
+            left=executable,
+            right=None,
+        )
+        self.fd = fd
+        if fd is None:
+            self.fd = self.DEFAULTS[operator]['fd']
+        self.fd = int(self.fd)
+        self.mode = self.DEFAULTS[operator]['mode']
+        self.filename = filename
+
+    def execute(self) -> int:
+
+        try:
+            new = os.open(
+                path=self.filename,
+                flags=self.mode,
+                mode=0o644,
+            )
+            os.set_inheritable(new, True)
+        except FileNotFoundError:
+            return 1
+
+        if fork() == 0:
+            # Child process.
+            os.dup2(new, self.fd)
+            exit_code = self.left.execute()
+            sys.exit(exit_code)
+
+        # Parent process.
+        os.close(new)
+        _, wait_status = os.wait()
+        exit_code = os.waitstatus_to_exitcode(wait_status)
+        return exit_code
+
+
 class ListNode(Node):
 
     def execute(self) -> int:
