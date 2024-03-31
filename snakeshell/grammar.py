@@ -54,12 +54,23 @@ atom
 
 command
     =
-    path:string args:{ string }*
+    path:filename args:{arg}*
+    ;
+
+arg
+    =
+    string
+    ;
+
+filename
+    =
+    string
     ;
 
 string
     =
-    | "'" @:/[^']*/ "'"
-    | /[^\s'";()|&]+/
+    | "'" ~ @:/[^']*/ "'"
+    | '"' ~ @:/[^"]*/ '"'
+    | /[^\s'";()|&$]+/
     ;
 '''
