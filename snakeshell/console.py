@@ -1,4 +1,5 @@
 import os
+import sys
 
 
 OR_CONTINUE = '||\n'
@@ -10,7 +11,8 @@ def write(data: str) -> None:
     """
     Writes text to the console without a newline at the end.
     """
-    os.write(1, data.encode('utf-8'))
+    if sys.stdin.isatty():
+        os.write(1, data.encode('utf-8'))
 
 
 def writeline(data: str) -> None:
