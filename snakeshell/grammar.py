@@ -55,7 +55,8 @@ atom
 
 redirected
     =
-    command:command redirection:{redirection}+
+    | redirected ~ redirection
+    | command redirection
     ;
 
 redirection
