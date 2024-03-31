@@ -49,7 +49,28 @@ atom
     =
     | subshell
     | inverted
+    | redirected
     | command
+    ;
+
+redirected
+    =
+    command:command redirection:{redirection}+
+    ;
+
+redirection
+    =
+    operation:redirection_start filename:filename
+    ;
+
+redirection_start
+    =
+    | fd:[/[0-9]/] type:'>>'
+    | fd:[/[0-9]/] type:'<>'
+    | fd:[/[0-9]/] type:'<&'
+    | fd:[/[0-9]/] type:'&>'
+    | fd:[/[0-9]/] type:'>'
+    | fd:[/[0-9]/] type:'<'
     ;
 
 command
@@ -59,7 +80,7 @@ command
 
 arg
     =
-    string
+    !redirection_start string
     ;
 
 filename
@@ -71,6 +92,6 @@ string
     =
     | "'" ~ @:/[^']*/ "'"
     | '"' ~ @:/[^"]*/ '"'
-    | /[^\s'";()|&$]+/
+    | /[^\s'";()<>|&$]+/
     ;
 '''
