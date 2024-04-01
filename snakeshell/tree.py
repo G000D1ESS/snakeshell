@@ -191,17 +191,24 @@ class RedirectNode(Node):
 
         if fork() == 0:
             # Child process.
-            try:
-                new = os.open(
-                    path=self.filename,
-                    flags=self.mode,
-                    mode=0o644,
-                )
-                os.dup2(new, self.fd)
+                if self.mode is None:
+                    if self.filename == '-':
+                        os.close(self.fd)
+                    else:
+                        new = os.dup(int(self.filename))
+                        os.dup2(new, self.fd)
+                else:
+                    try:
+                        new = os.open(
+                            path=self.filename,
+                            flags=self.mode,
+                            mode=0o644,
+                        )
+                        os.dup2(new, self.fd)
+                    except FileNotFoundError:
+                        sys.exit(1)
                 exit_code = self.left.execute()
                 sys.exit(exit_code)
-            except FileNotFoundError:
-                sys.exit(1)
 
         # Parent process.
         _, wait_status = os.wait()
