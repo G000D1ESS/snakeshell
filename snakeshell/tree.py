@@ -160,23 +160,13 @@ class BuiltinCommandNode(CommandNode):
 
 class RedirectNode(Node):
 
-    DEFAULTS = {
-        '<': {
-            'fd': 0,
-            'mode': os.O_RDONLY,
-        },
-        '>': {
-            'fd': 1,
-            'mode': os.O_CREAT|os.O_TRUNC|os.O_WRONLY,
-        },
-        '>>': {
-            'fd': 1,
-            'mode': os.O_CREAT|os.O_APPEND|os.O_WRONLY,
-        },
-        '<>': {
-            'fd': 0,
-            'mode': os.O_CREAT|os.O_RDWR,
-        },
+    MODES = {
+        '<': {'fd': 0, 'mode': os.O_RDONLY},
+        '>': {'fd': 1, 'mode': os.O_CREAT | os.O_TRUNC | os.O_WRONLY},
+        '>>': {'fd': 1, 'mode': os.O_CREAT | os.O_APPEND | os.O_WRONLY},
+        '<>': {'fd': 0, 'mode': os.O_CREAT | os.O_RDWR},
+        '<&': {'fd': 0, 'mode': None},
+        '>&': {'fd': 1, 'mode': None},
     }
 
     def __init__(
@@ -192,31 +182,28 @@ class RedirectNode(Node):
         )
         self.fd = fd
         if fd is None:
-            self.fd = self.DEFAULTS[operator]['fd']
+            self.fd = self.MODES[operator]['fd']
         self.fd = int(self.fd)
-        self.mode = self.DEFAULTS[operator]['mode']
+        self.mode = self.MODES[operator]['mode']
         self.filename = filename
 
     def execute(self) -> int:
 
-        try:
-            new = os.open(
-                path=self.filename,
-                flags=self.mode,
-                mode=0o644,
-            )
-            os.set_inheritable(new, True)
-        except FileNotFoundError:
-            return 1
-
         if fork() == 0:
             # Child process.
-            os.dup2(new, self.fd)
-            exit_code = self.left.execute()
-            sys.exit(exit_code)
+            try:
+                new = os.open(
+                    path=self.filename,
+                    flags=self.mode,
+                    mode=0o644,
+                )
+                os.dup2(new, self.fd)
+                exit_code = self.left.execute()
+                sys.exit(exit_code)
+            except FileNotFoundError:
+                sys.exit(1)
 
         # Parent process.
-        os.close(new)
         _, wait_status = os.wait()
         exit_code = os.waitstatus_to_exitcode(wait_status)
         return exit_code
