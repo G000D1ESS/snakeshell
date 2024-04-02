@@ -81,7 +81,13 @@ command
 
 arg
     =
-    !redirection_start string
+    | !redirection_start string
+    | !redirection_start command_substitution
+    ;
+
+command_substitution
+    =
+    '$(' @:global ')'
     ;
 
 filename

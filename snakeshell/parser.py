@@ -12,6 +12,7 @@ from snakeshell.tree import (
     SubshellNode,
     InvertExitCodeNode,
     BuiltinCommandNode,
+    CommandSubstitutionNode,
 )
 
 
@@ -87,6 +88,11 @@ class ShellSemantics:
         return CommandNode(
             execute_path=path,
             arguments=[path]+args,
+        )
+
+    def command_substitution(self, ast):
+        return CommandSubstitutionNode(
+            executable=ast,
         )
 
     def string(self, ast):

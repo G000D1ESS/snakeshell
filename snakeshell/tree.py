@@ -97,26 +97,76 @@ class PipelineNode(Node):
         return 0
 
 
+class CommandSubstitutionNode(Node):
+
+    def __init__(
+        self,
+        executable: Node,
+    ):
+        super().__init__(
+            left=executable,
+            right=None,
+        )
+        self.output: str = ''
+
+    def execute(self) -> int:
+
+        # Open pipe.
+        r, w = os.pipe()
+        os.set_inheritable(r, True)
+        os.set_inheritable(w, True)
+
+        if fork() == 0:
+            # Child process.
+            # Write stdout into pipe.
+            os.close(r)
+            os.dup2(w, 1)
+            code = self.left.execute()
+            sys.exit(code)
+
+        # Parent process.
+        # Capture command output.
+        os.close(w)
+        with os.fdopen(r, mode='r') as cmd_output:
+            self.output = cmd_output.read()
+
+        # Wait child process.
+        _, wait_status = os.wait()
+        exit_code = os.waitstatus_to_exitcode(wait_status)
+        return exit_code
+
+
 class CommandNode(Node):
 
     def __init__(
         self,
         execute_path: str,
-        arguments: list[str],
+        arguments: list[str | CommandSubstitutionNode],
     ):
         super().__init__(left=None, right=None)
         self.execute_path = execute_path
         self.arguments = arguments
 
     def execute(self) -> int:
-        pid = fork()
-        if pid == 0:
+
+        # Process arguments, including command substitutions.
+        args = []
+        for arg in self.arguments:
+            if isinstance(arg, CommandSubstitutionNode):
+                command = arg
+                command.execute()
+                if command.output:
+                    args.extend(command.output.split())
+                continue
+            args.append(arg)
+
+        if fork() == 0:
             # Child process.
             # Replace the current process with a new
             # process running the command.
             os.execvp(
                 file=self.execute_path,
-                args=self.arguments,
+                args=args,
             )
 
         # Parent process.
