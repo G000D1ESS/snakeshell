@@ -1,6 +1,8 @@
 import sys
 import signal
 
+from tatsu.exceptions import FailedParse
+
 from snakeshell.console import error as show_error 
 from snakeshell.console import prompt
 from snakeshell.parser import parse
@@ -23,7 +25,11 @@ def loop():
         line = line.strip()
         if not line:
             continue
-        command = parse(line)
+        try:
+            command = parse(line)
+        except FailedParse:
+            show_error('Syntax error')
+            continue
         exit_code = command.execute()
         if exit_code != 0:
             show_error(f'Exit: {exit_code}')

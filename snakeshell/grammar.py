@@ -29,8 +29,8 @@ and_or
 
 pipeline
     =
-    | atom '|' pipeline
-    | atom '|' atom
+    | atom '|' !inverted pipeline
+    | atom '|' !inverted atom
     ;
 
 expr
