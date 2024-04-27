@@ -1,36 +1,22 @@
+import pytest
+
 from snakeshell.parser import parse
 from snakeshell.tree import CommandNode
 
 
-class TestCommandParsing:
-
-    def test_without_args(self):
-        result = parse(command='/bin/cat')
-        assert isinstance(result, CommandNode)
-        assert result.execute_path == '/bin/cat'
-        assert result.arguments == ['/bin/cat']
-
-    def test_with_args(self):
-        result = parse(command='/bin/echo foo bar')
-        assert isinstance(result, CommandNode)
-        assert result.execute_path == '/bin/echo'
-        assert result.arguments == ['/bin/echo', 'foo', 'bar']
-
-    def test_with_single_quoted_args(self):
-        result = parse(command='/bin/echo \'foo bar\'')
-        assert isinstance(result, CommandNode)
-        assert result.execute_path == '/bin/echo'
-        assert result.arguments == ['/bin/echo', 'foo bar']
-
-    def test_with_double_quoted_args(self):
-        result = parse(command='/bin/echo "foo bar"')
-        assert isinstance(result, CommandNode)
-        assert result.execute_path == '/bin/echo'
-        assert result.arguments == ['/bin/echo', 'foo bar']
-
-    def test_with_mixed_quoted_args(self):
-        result = parse(command='/bin/echo \'first one\' "second one"')
-        assert isinstance(result, CommandNode)
-        assert result.execute_path == '/bin/echo'
-        assert result.arguments == ['/bin/echo', 'first one', 'second one']
+@pytest.mark.parametrize(
+    "command, excpected_path, excpected_args",
+    [
+        ['/bin/echo', '/bin/echo', ['/bin/echo']],
+        ['/bin/echo foo bar', '/bin/echo', ['/bin/echo', 'foo', 'bar']],
+        ["/bin/echo 'foo bar'", '/bin/echo', ['/bin/echo', 'foo bar']],
+        ['/bin/echo "foo bar"', '/bin/echo', ['/bin/echo', 'foo bar']],
+        ['/bin/echo \'a b\' "c d"', '/bin/echo', ['/bin/echo', 'a b', 'c d']],
+    ],
+)
+def test_command_parsing(command, excpected_path, excpected_args):
+    result = parse(command)
+    assert isinstance(result, CommandNode)
+    assert result.arguments == excpected_args
+    assert result.execute_path == excpected_path
 
