@@ -36,7 +36,7 @@ class SubshellNode(Node):
         if pid == 0:
             # Child process.
             exit_status = self.left.execute()
-            sys.exit(exit_status)
+            os._exit(exit_status)
 
         # Parent process.
         _, wait_status = os.wait()
@@ -67,7 +67,7 @@ class PipelineNode(Node):
             os.close(r)
             os.dup2(w, 1)
             code = self.left.execute()
-            sys.exit(code)
+            os._exit(code)
 
         if fork() == 0:
             # Child process.
@@ -75,7 +75,7 @@ class PipelineNode(Node):
             os.close(w)
             os.dup2(r, 0)
             code = self.right.execute()
-            sys.exit(code)
+            os._exit(code)
 
         # Parent process.
 
@@ -122,7 +122,7 @@ class CommandSubstitutionNode(Node):
             os.close(r)
             os.dup2(w, 1)
             code = self.left.execute()
-            sys.exit(code)
+            os._exit(code)
 
         # Parent process.
         # Capture command output.
@@ -164,10 +164,13 @@ class CommandNode(Node):
             # Child process.
             # Replace the current process with a new
             # process running the command.
-            os.execvp(
-                file=self.execute_path,
-                args=args,
-            )
+            try:
+                os.execvp(
+                    file=self.execute_path,
+                    args=args,
+                )
+            except FileNotFoundError:
+                os._exit(1)
 
         # Parent process.
         # Wait child process.
@@ -204,7 +207,7 @@ class BuiltinCommandNode(CommandNode):
                 exit_code = 0
                 if len(self.arguments) >= 2:
                     exit_code = int(self.arguments[1])
-                sys.exit(exit_code)
+                os._exit(exit_code)
         return 0
 
 
@@ -256,9 +259,9 @@ class RedirectNode(Node):
                         )
                         os.dup2(new, self.fd)
                     except FileNotFoundError:
-                        sys.exit(1)
+                        os._exit(1)
                 exit_code = self.left.execute()
-                sys.exit(exit_code)
+                os._exit(exit_code)
 
         # Parent process.
         _, wait_status = os.wait()
