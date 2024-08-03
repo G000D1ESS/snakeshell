@@ -6,9 +6,7 @@ def test_execution_without_stdout():
         execute_path='echo',
         arguments=['echo'],
     )
-
     exit_code = command.execute()
-
     assert exit_code == 0
 
 
@@ -43,8 +41,6 @@ def test_execution_unknown_command_should_return_non_zero_exit_code():
         execute_path='UnkN0wNC0mm4Nd',
         arguments=['UnkN0wNC0mm4Nd'],
     )
-
     exit_code = command.execute()
-
     assert exit_code != 0
 
