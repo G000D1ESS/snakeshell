@@ -6,7 +6,9 @@ def test_execution_without_stdout():
         execute_path='echo',
         arguments=['echo'],
     )
+
     exit_code = command.execute()
+
     assert exit_code == 0
 
 
