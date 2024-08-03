@@ -1,4 +1,3 @@
-
 from snakeshell.tree import CommandNode
 
 
