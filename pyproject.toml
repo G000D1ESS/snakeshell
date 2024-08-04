@@ -29,3 +29,8 @@ snake = "snakeshell.shell:run_shell"
 [project.urls]
 Homepage = "https://github.com/G000D1ESS/snakeshell.git"
 
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.format]
+quote-style = "single"
