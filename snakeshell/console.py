@@ -19,7 +19,7 @@ def writeline(data: str) -> None:
     """
     Writes a line of text to the console, followed by an end character.
     """
-    write(data+'\n')
+    write(data + '\n')
 
 
 def readline() -> str:
@@ -44,7 +44,7 @@ def prompt_msg() -> str:
     dirname = os.getcwd()
     homedir = os.path.expanduser('~')
     if dirname.startswith(homedir):
-        dirname = '~' + dirname[len(homedir):]
+        dirname = '~' + dirname[len(homedir) :]
     return f'\033[34;1m{dirname}\033[0m $ '
 
 
@@ -68,4 +68,3 @@ def prompt() -> str:
             command += ' '
             continue
         return command
-

@@ -3,7 +3,7 @@ from snakeshell.tree import CommandNode
 
 
 def is_command(node):
-    return type(node) == CommandNode
+    return type(node) is CommandNode
 
 
 def node_to_dict(node):
@@ -76,4 +76,3 @@ def test_with_double_and_single_quoted_arguments():
         'exec': '/bin/echo',
         'args': ['/bin/echo', 'first one', 'second one'],
     }
-

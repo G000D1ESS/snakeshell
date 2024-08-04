@@ -1,5 +1,4 @@
 import os
-import sys
 import signal
 
 
@@ -16,7 +15,6 @@ def fork() -> int:
 
 
 class Node:
-
     def __init__(
         self,
         left,
@@ -30,7 +28,6 @@ class Node:
 
 
 class SubshellNode(Node):
-
     def execute(self) -> int:
         pid = fork()
         if pid == 0:
@@ -45,7 +42,6 @@ class SubshellNode(Node):
 
 
 class InvertExitCodeNode(Node):
-
     def execute(self) -> int:
         exit_code = self.left.execute()
         exit_code = int(exit_code == 0)
@@ -53,9 +49,7 @@ class InvertExitCodeNode(Node):
 
 
 class PipelineNode(Node):
-
     def execute(self) -> int:
-
         # Open pipe
         r, w = os.pipe()
         os.set_inheritable(r, True)
@@ -98,7 +92,6 @@ class PipelineNode(Node):
 
 
 class CommandSubstitutionNode(Node):
-
     def __init__(
         self,
         executable: Node,
@@ -110,7 +103,6 @@ class CommandSubstitutionNode(Node):
         self.output: str = ''
 
     def execute(self) -> int:
-
         # Open pipe.
         r, w = os.pipe()
         os.set_inheritable(r, True)
@@ -137,7 +129,6 @@ class CommandSubstitutionNode(Node):
 
 
 class CommandNode(Node):
-
     def __init__(
         self,
         execute_path: str,
@@ -148,7 +139,6 @@ class CommandNode(Node):
         self.arguments = arguments
 
     def execute(self) -> int:
-
         # Process arguments, including command substitutions.
         args = []
         for arg in self.arguments:
@@ -180,7 +170,6 @@ class CommandNode(Node):
 
 
 class BuiltinCommandNode(CommandNode):
-
     def execute(self) -> int:
         match self.execute_path:
             case 'cd':
@@ -201,7 +190,7 @@ class BuiltinCommandNode(CommandNode):
                 path, *args = self.arguments[1:]
                 os.execvp(
                     file=path,
-                    args=[path]+args,
+                    args=[path] + args,
                 )
             case 'exit':
                 exit_code = 0
@@ -212,7 +201,6 @@ class BuiltinCommandNode(CommandNode):
 
 
 class RedirectNode(Node):
-
     MODES = {
         '<': {'fd': 0, 'mode': os.O_RDONLY},
         '>': {'fd': 1, 'mode': os.O_CREAT | os.O_TRUNC | os.O_WRONLY},
@@ -241,27 +229,26 @@ class RedirectNode(Node):
         self.filename = filename
 
     def execute(self) -> int:
-
         if fork() == 0:
             # Child process.
-                if self.mode is None:
-                    if self.filename == '-':
-                        os.close(self.fd)
-                    else:
-                        new = os.dup(int(self.filename))
-                        os.dup2(new, self.fd)
+            if self.mode is None:
+                if self.filename == '-':
+                    os.close(self.fd)
                 else:
-                    try:
-                        new = os.open(
-                            path=self.filename,
-                            flags=self.mode,
-                            mode=0o644,
-                        )
-                        os.dup2(new, self.fd)
-                    except FileNotFoundError:
-                        os._exit(1)
-                exit_code = self.left.execute()
-                os._exit(exit_code)
+                    new = os.dup(int(self.filename))
+                    os.dup2(new, self.fd)
+            else:
+                try:
+                    new = os.open(
+                        path=self.filename,
+                        flags=self.mode,
+                        mode=0o644,
+                    )
+                    os.dup2(new, self.fd)
+                except FileNotFoundError:
+                    os._exit(1)
+            exit_code = self.left.execute()
+            os._exit(exit_code)
 
         # Parent process.
         _, wait_status = os.wait()
@@ -270,14 +257,12 @@ class RedirectNode(Node):
 
 
 class ListNode(Node):
-
     def execute(self) -> int:
         self.left.execute()
         return self.right.execute()
 
 
 class OrNode(Node):
-
     def execute(self) -> int:
         exit_code = self.left.execute()
         if exit_code == 0:
@@ -286,10 +271,8 @@ class OrNode(Node):
 
 
 class AndNode(Node):
-
     def execute(self) -> int:
         exit_code = self.left.execute()
         if exit_code != 0:
             return exit_code
         return self.right.execute()
-

@@ -28,7 +28,6 @@ _parser = tatsu.compile(GRAMMAR)
 
 
 class ShellSemantics:
-
     def sequential(self, ast):
         left, _, right = ast
         return ListNode(
@@ -83,11 +82,11 @@ class ShellSemantics:
         if path in BUILTIN_COMMANDS:
             return BuiltinCommandNode(
                 execute_path=path,
-                arguments=[path]+args,
+                arguments=[path] + args,
             )
         return CommandNode(
             execute_path=path,
-            arguments=[path]+args,
+            arguments=[path] + args,
         )
 
     def command_substitution(self, ast):
@@ -105,4 +104,3 @@ def parse(command: str) -> Node:
         semantics=ShellSemantics(),
     )
     return node
-

@@ -43,4 +43,3 @@ def test_execution_unknown_command_should_return_non_zero_exit_code():
     )
     exit_code = command.execute()
     assert exit_code != 0
-

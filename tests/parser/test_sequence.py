@@ -72,5 +72,4 @@ def test_sequence_with_trailing_semicolon():
 @pytest.mark.xfail
 def test_sequence_multiple_trailing_semicolons():
     command = 'a; b; c;;;'
-    node = parse(command)
-
+    parse(command)

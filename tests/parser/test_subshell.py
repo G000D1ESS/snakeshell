@@ -3,7 +3,7 @@ from snakeshell.tree import SubshellNode
 
 
 def is_subshell(node):
-    return type(node) == SubshellNode
+    return type(node) is SubshellNode
 
 
 def test_single_command():
@@ -40,4 +40,3 @@ def test_and_or_list():
     command = '(echo a && echo b || echo c)'
     node = parse(command)
     assert is_subshell(node)
-

@@ -3,7 +3,7 @@ import signal
 
 from tatsu.exceptions import FailedParse
 
-from snakeshell.console import error as show_error 
+from snakeshell.console import error as show_error
 from snakeshell.console import prompt
 from snakeshell.parser import parse
 
@@ -38,4 +38,3 @@ def loop():
 def run_shell():
     setup()
     loop()
-
