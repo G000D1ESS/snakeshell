@@ -3,8 +3,7 @@ import signal
 
 from tatsu.exceptions import FailedParse
 
-from snakeshell.console import error as show_error
-from snakeshell.console import prompt
+from snakeshell import console
 from snakeshell.parser import parse
 
 
@@ -19,7 +18,7 @@ def setup():
 def loop():
     # Start an infinite loop to continuously accept commands.
     while True:
-        line = prompt()
+        line = console.prompt()
         if not line:
             break
         line = line.strip()
@@ -28,11 +27,11 @@ def loop():
         try:
             command = parse(line)
         except FailedParse:
-            show_error('Syntax error')
+            console.error('Syntax error')
             continue
         exit_code = command.execute()
         if exit_code != 0:
-            show_error(f'Exit: {exit_code}')
+            console.error(f'Exit: {exit_code}')
 
 
 def run_shell():
