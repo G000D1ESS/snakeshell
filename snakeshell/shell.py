@@ -27,11 +27,11 @@ def loop():
         try:
             command = parse(line)
         except FailedParse:
-            console.error('Syntax error')
+            console.error('parse error')
             continue
         exit_code = command.execute()
         if exit_code != 0:
-            console.error(f'Exit: {exit_code}')
+            console.error(f'process failed (exit code: {exit_code})')
 
 
 def run_shell():

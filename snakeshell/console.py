@@ -33,7 +33,7 @@ def error(msg: str) -> None:
     """
     Writes an error message to the standard error output.
     """
-    color_msg = '\033[101m' + msg + '\033[0m\n'
+    color_msg = '\033[31msnake: ' + msg + '\033[0m\n'
     os.write(2, color_msg.encode('utf-8'))
 
 
