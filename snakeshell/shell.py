@@ -1,5 +1,6 @@
 import sys
 import signal
+import os
 
 from tatsu.exceptions import FailedParse
 
@@ -13,6 +14,10 @@ def setup():
 
     # Ignore SIGINT (Ctrl+C), preventing the shell from exiting on Ctrl+C.
     signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+    # Set the 'CLICOLOR' environment variable to '1' to enable
+    # colored output for commands like 'ls'.
+    os.environ['CLICOLOR'] = '1'
 
 
 def loop():
