@@ -31,8 +31,11 @@ def loop():
             continue
         try:
             command = parse(line)
-        except FailedParse:
-            console.error('parse error')
+        except FailedParse as error:
+            error_msg = 'parse error\n'
+            error_msg += f'{line}\n'
+            error_msg += '^'.rjust(error.pos+1)
+            console.error(error_msg)
             continue
         exit_code = command.execute()
         if exit_code != 0:
