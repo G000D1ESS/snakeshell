@@ -26,9 +26,11 @@ def loop():
         line = console.prompt()
         if not line:
             break
+
         line = line.strip()
         if not line:
             continue
+
         try:
             command = parse(line)
         except FailedParse as error:
@@ -37,9 +39,13 @@ def loop():
             error_msg += '^'.rjust(error.pos+1)
             console.error(error_msg)
             continue
-        exit_code = command.execute()
-        if exit_code != 0:
-            console.error(f'process failed (exit code: {exit_code})')
+
+        try:
+            exit_code = command.execute()
+            if exit_code != 0:
+                console.error(f'process failed (exit code: {exit_code})')
+        except Exception as error:  # noqa
+            console.error(f'execution error: {error}')
 
 
 def run_shell():
