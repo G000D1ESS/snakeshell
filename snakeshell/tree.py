@@ -175,10 +175,12 @@ class BuiltinCommandNode(CommandNode):
             case 'cd':
                 default_path = '~'
                 path = default_path
+
                 if len(self.arguments) >= 2:
                     path = self.arguments[1]
                 path = os.path.normpath(path)
                 path = os.path.expanduser(path)
+
                 try:
                     os.chdir(path)
                 except FileNotFoundError:
@@ -186,6 +188,10 @@ class BuiltinCommandNode(CommandNode):
                     os.write(2, error_msg.encode())
                     return 1
             case 'exec':
+                if len(self.arguments) < 2:
+                    os.write(2, b'exec: exec requires a command to execute\n')
+                    return 1
+
                 # Set the signal handler for SIGINT (Ctrl+C) to
                 # the default handling. This ensures that the process
                 # will terminate on a SIGINT signal.
@@ -193,6 +199,7 @@ class BuiltinCommandNode(CommandNode):
                     signal.SIGINT,
                     signal.SIG_DFL,
                 )
+
                 # Replace the current process with a new
                 # process running the command.
                 path, *args = self.arguments[1:]
