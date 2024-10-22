@@ -173,7 +173,10 @@ class BuiltinCommandNode(CommandNode):
     def execute(self) -> int:
         match self.execute_path:
             case 'cd':
-                path = self.arguments[1]
+                default_path = '~'
+                path = default_path
+                if len(self.arguments) >= 2:
+                    path = self.arguments[1]
                 path = os.path.normpath(path)
                 path = os.path.expanduser(path)
                 os.chdir(path)
