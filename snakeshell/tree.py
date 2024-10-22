@@ -173,11 +173,25 @@ class BuiltinCommandNode(CommandNode):
     def execute(self) -> int:
         match self.execute_path:
             case 'cd':
-                path = self.arguments[1]
+                default_path = '~'
+                path = default_path
+
+                if len(self.arguments) >= 2:
+                    path = self.arguments[1]
                 path = os.path.normpath(path)
                 path = os.path.expanduser(path)
-                os.chdir(path)
+
+                try:
+                    os.chdir(path)
+                except FileNotFoundError:
+                    error_msg = f'cd: no such file or directory: {path}\n'
+                    os.write(2, error_msg.encode())
+                    return 1
             case 'exec':
+                if len(self.arguments) < 2:
+                    os.write(2, b'exec: exec requires a command to execute\n')
+                    return 1
+
                 # Set the signal handler for SIGINT (Ctrl+C) to
                 # the default handling. This ensures that the process
                 # will terminate on a SIGINT signal.
@@ -185,6 +199,7 @@ class BuiltinCommandNode(CommandNode):
                     signal.SIGINT,
                     signal.SIG_DFL,
                 )
+
                 # Replace the current process with a new
                 # process running the command.
                 path, *args = self.arguments[1:]
@@ -195,7 +210,12 @@ class BuiltinCommandNode(CommandNode):
             case 'exit':
                 exit_code = 0
                 if len(self.arguments) >= 2:
-                    exit_code = int(self.arguments[1])
+                    try:
+                        exit_code = int(self.arguments[1])
+                    except ValueError:
+                        error_msg = f'exit: {self.arguments[1]}: numeric argument required\n'
+                        os.write(2, error_msg.encode())
+                        exit_code = 1
                 os._exit(exit_code)
         return 0
 
