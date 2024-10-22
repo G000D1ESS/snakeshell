@@ -179,7 +179,12 @@ class BuiltinCommandNode(CommandNode):
                     path = self.arguments[1]
                 path = os.path.normpath(path)
                 path = os.path.expanduser(path)
-                os.chdir(path)
+                try:
+                    os.chdir(path)
+                except FileNotFoundError:
+                    error_msg = f'cd: no such file or directory: {path}\n'
+                    os.write(2, error_msg.encode())
+                    return 1
             case 'exec':
                 # Set the signal handler for SIGINT (Ctrl+C) to
                 # the default handling. This ensures that the process
