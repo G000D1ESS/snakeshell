@@ -210,7 +210,12 @@ class BuiltinCommandNode(CommandNode):
             case 'exit':
                 exit_code = 0
                 if len(self.arguments) >= 2:
-                    exit_code = int(self.arguments[1])
+                    try:
+                        exit_code = int(self.arguments[1])
+                    except ValueError:
+                        error_msg = f'exit: {self.arguments[1]}: numeric argument required\n'
+                        os.write(2, error_msg.encode())
+                        exit_code = 1
                 os._exit(exit_code)
         return 0
 
