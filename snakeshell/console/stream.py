@@ -22,11 +22,18 @@ def writeline(data: str) -> None:
     write(data + '\n')
 
 
+def read(n: int) -> str:
+    """
+    Read N bytes from the console.
+    """
+    return os.read(STDIN, n).decode('utf-8')
+
+
 def readline() -> str:
     """
     Read a line of text from the console.
     """
-    return os.read(STDIN, 1024).decode('utf-8')
+    return read(1024)
 
 
 def error(msg: str) -> None:
