@@ -2,7 +2,7 @@ import os
 
 from snakeshell.console.stream import write
 from snakeshell.console.cursor import set_cursor, CursorType
-from snakeshell.console.command_line import interactive_readline
+from snakeshell.console.command_line import command_line
 
 
 OR_CONTINUE = '||\n'
@@ -33,7 +33,7 @@ def prompt() -> str:
     completed = False
 
     while not completed:
-        line = interactive_readline()
+        line = command_line()
         command += line
         if command.endswith(BACKSLASH_CONTINUE):
             write('> ')

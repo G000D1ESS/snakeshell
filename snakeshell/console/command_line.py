@@ -1,4 +1,4 @@
-
+import sys
 import termios
 import tty
 
@@ -7,6 +7,15 @@ from snakeshell.console.cursor import move_cursor
 
 
 EOF = ''
+
+
+def command_line() -> str:
+    """
+    TODO: Write
+    """
+    if not sys.stdin.isatty():
+        return console.readline()
+    return interactive_readline()
 
 
 def interactive_readline() -> str:
