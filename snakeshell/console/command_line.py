@@ -18,40 +18,40 @@ def interactive_readline() -> str:
     try:
         tty.setraw(0)
 
+        buffer = []
         position = 0
-        buffer = bytearray()
 
         while True:
-            match ch := console.read(1).encode('utf-8'):
+            match ch := console.read(1):
                 # EOF
-                case b'':
+                case '':
                     return EOF
 
                 # Enter
-                case b'\r':
+                case '\r':
+                    buffer.append('\n')
                     console.write('\r\n')
-                    buffer.append(ord(b'\n'))
-                    return buffer.decode('utf-8')
+                    return ''.join(buffer)
 
                 # Ctrl-D
-                case b'\x04':
+                case '\x04':
                     if not buffer:
                         return EOF
 
                 # Ctrl-C
-                case b'\x03':
+                case '\x03':
                     console.write('\r\n')
                     return '\n'
 
                 # Backspace
-                case b'\x7f':
+                case '\x7f':
                     if position > 0:
                         position -= 1
                         move_cursor(-1)
                         del buffer[position]
 
                 # Escape
-                case b'\x1b':
+                case '\x1b':
                     seq = console.read(2)
                     # Left arrow
                     if seq == r'[D':
@@ -66,14 +66,14 @@ def interactive_readline() -> str:
 
                 # Symbols
                 case _:
-                    buffer.insert(position, ord(ch))
-                    console.write(ch.decode('utf-8'))
+                    buffer.insert(position, ch)
+                    console.write(ch)
                     position += 1
 
             # Update command line
             move_cursor(-position)
             console.write('\x1b[K')
-            console.write(buffer.decode('utf-8'))
+            console.write(''.join(buffer))
             move_cursor(position-len(buffer))
     finally:
         termios.tcsetattr(0, termios.TCSADRAIN, default_settings)
