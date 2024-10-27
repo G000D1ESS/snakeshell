@@ -1,7 +1,6 @@
 import os
 
 from snakeshell.console.stream import write
-from snakeshell.console.cursor import set_cursor, CursorType
 from snakeshell.console.command_line import command_line
 
 
@@ -26,11 +25,9 @@ def prompt() -> str:
     Displays a prompt message to the user and requests
     their input, returning the user's input line.
     """
-    write(prompt_msg())
-    set_cursor(CursorType.THICK)
-
     command = ''
     completed = False
+    write(prompt_msg())
 
     while not completed:
         line = command_line()
@@ -46,5 +43,4 @@ def prompt() -> str:
             continue
         completed = True
 
-    set_cursor(CursorType.DEFAULT)
     return command

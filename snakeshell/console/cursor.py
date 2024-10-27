@@ -1,5 +1,6 @@
-import os
 from enum import Enum
+
+from snakeshell import console
 
 
 class CursorType(Enum):
@@ -12,8 +13,8 @@ def set_cursor(cursor_type: CursorType) -> None:
     """
     Sets the cursor style in the console to the specified type.
     """
-    change_cursor_escape_sequence = str(cursor_type.value).encode()
-    os.write(1, change_cursor_escape_sequence)
+    change_cursor_escape_sequence = str(cursor_type.value)
+    console.write(change_cursor_escape_sequence)
 
 
 def move_cursor(x: int) -> None:
@@ -21,6 +22,6 @@ def move_cursor(x: int) -> None:
     TODO: Write.
     """
     if x > 0:
-        os.write(1, f'\x1b[{x}C'.encode())
+        console.write(f'\x1b[{x}C')
     elif x < 0:
-        os.write(1, f'\x1b[{-x}D'.encode())
+        console.write(f'\x1b[{-x}D')

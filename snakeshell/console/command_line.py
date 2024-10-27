@@ -3,8 +3,7 @@ import termios
 import tty
 
 from snakeshell import console
-from snakeshell.console.cursor import move_cursor
-
+from snakeshell.console.cursor import move_cursor, set_cursor, CursorType
 
 EOF = ''
 
@@ -22,6 +21,7 @@ def interactive_readline() -> str:
     """
     TODO: Write.
     """
+    set_cursor(CursorType.THICK)
     default_settings = termios.tcgetattr(0)
 
     try:
@@ -86,3 +86,4 @@ def interactive_readline() -> str:
             move_cursor(position-len(buffer))
     finally:
         termios.tcsetattr(0, termios.TCSADRAIN, default_settings)
+        set_cursor(CursorType.DEFAULT)
