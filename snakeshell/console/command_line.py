@@ -1,7 +1,8 @@
-import os
+
 import termios
 import tty
 
+from snakeshell import console
 from snakeshell.console.cursor import move_cursor
 
 
@@ -21,14 +22,14 @@ def interactive_readline() -> str:
         buffer = bytearray()
 
         while True:
-            match ch := os.read(0, 1):
+            match ch := console.read(1).encode('utf-8'):
                 # EOF
                 case b'':
                     return EOF
 
                 # Enter
                 case b'\r':
-                    os.write(1, b'\r\n')
+                    console.write('\r\n')
                     buffer.append(ord(b'\n'))
                     return buffer.decode('utf-8')
 
@@ -39,7 +40,7 @@ def interactive_readline() -> str:
 
                 # Ctrl-C
                 case b'\x03':
-                    os.write(0, b'\r\n')
+                    console.write('\r\n')
                     return '\n'
 
                 # Backspace
@@ -51,7 +52,7 @@ def interactive_readline() -> str:
 
                 # Escape
                 case b'\x1b':
-                    seq = os.read(0, 2).decode()
+                    seq = console.read(2)
                     # Left arrow
                     if seq == r'[D':
                         if position > 0:
@@ -66,13 +67,13 @@ def interactive_readline() -> str:
                 # Symbols
                 case _:
                     buffer.insert(position, ord(ch))
+                    console.write(ch.decode('utf-8'))
                     position += 1
-                    os.write(1, ch)
 
             # Update command line
             move_cursor(-position)
-            os.write(1, '\x1b[K'.encode())
-            os.write(1, buffer)
+            console.write('\x1b[K')
+            console.write(buffer.decode('utf-8'))
             move_cursor(position-len(buffer))
     finally:
         termios.tcsetattr(0, termios.TCSADRAIN, default_settings)
