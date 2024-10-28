@@ -22,73 +22,94 @@ def interactive_readline() -> str:
     Handles interactive line reading with cursor movement, backspace,
     and basic command-line editing capabilities.
     """
-    set_cursor(CursorType.THICK)
     default_settings = termios.tcgetattr(0)
 
     try:
         tty.setraw(0)
+        set_cursor(CursorType.THICK)
 
-        buffer = []
-        position = 0
+        buffer: list[str] = []
+        cursor_position: int = 0
 
         while True:
-            match ch := console.read(1):
-                # Enter
-                case '\r':
-                    buffer.append('\n')
-                    console.write('\r\n')
-                    return ''.join(buffer)
-
-                # Ctrl-D
-                case '\x04':
-                    if not buffer:
-                        return EOF
-
-                # Ctrl-C
-                case '\x03':
-                    console.write('\r\n')
-                    return '\n'
-
-                # Backspace
-                case '\x7f':
-                    if position > 0:
-                        position -= 1
-                        move_cursor(-1)
-                        del buffer[position]
-
-                # Escape
-                case '\x1b':
-                    seq = console.read(2)
-                    # Left arrow
-                    if seq == r'[D':
-                        if position > 0:
-                            position -= 1
-                            move_cursor(-1)
-                    # Right arrow
-                    elif seq == r'[C':
-                        if position < len(buffer):
-                            position += 1
-                            move_cursor(+1)
-
-                # Symbols
-                case _:
-                    buffer.insert(position, ch)
-                    console.write(ch)
-                    position += 1
-
-            # Update command line
-            redraw_input_line(buffer, position)
+            input_result, cursor_position = handle_input(buffer, cursor_position)
+            if input_result is not None:
+                return input_result
+            redraw_input_line(buffer, cursor_position)
 
     finally:
         termios.tcsetattr(0, termios.TCSADRAIN, default_settings)
         set_cursor(CursorType.DEFAULT)
 
 
-def redraw_input_line(
-        buffer: list[chr],
-        cursor_position: int,
-) -> None:
+def redraw_input_line(buffer: list[str], cursor_position: int) -> None:
     move_cursor(-cursor_position)
     console.write('\x1b[K')
     console.write(''.join(buffer))
     move_cursor(cursor_position - len(buffer))
+
+
+def handle_input(
+        buffer: list[str],
+        cursor_position: int,
+) -> tuple[str | None, int]:
+    match ch := console.read(1):
+        case '\r':
+            return handle_enter(buffer), cursor_position
+        case '\x03':
+            return handle_ctrl_c(), cursor_position
+        case '\x04':
+            return handle_ctrl_d(buffer), cursor_position
+        case '\x7f':
+            cursor_position = handle_backspace(buffer, cursor_position)
+        case '\x1b':
+            cursor_position = handle_escape_sequences(buffer, cursor_position)
+        case _:
+            cursor_position = handle_character_input(ch, buffer, cursor_position)
+    return None, cursor_position
+
+
+def handle_enter(buffer: list[str]) -> str:
+    buffer.append('\n')
+    console.write('\r\n')
+    return ''.join(buffer)
+
+
+def handle_ctrl_d(buffer: list[str]) -> str | None:
+    if not buffer:
+        return EOF
+
+
+def handle_ctrl_c() -> str:
+    console.write('\r\n')
+    return '\n'
+
+
+def handle_backspace(buffer: list[str], cursor_position: int) -> int:
+    if cursor_position > 0:
+        cursor_position -= 1
+        move_cursor(-1)
+        del buffer[cursor_position]
+    return cursor_position
+
+
+def handle_escape_sequences(buffer: list[str], cursor_position: int) -> int:
+    seq = console.read(2)
+
+    # Left arrow
+    if seq == r'[D' and cursor_position > 0:
+        move_cursor(-1)
+        return cursor_position - 1
+
+    # Right arrow
+    if seq == r'[C' and cursor_position < len(buffer):
+        move_cursor(+1)
+        return cursor_position + 1
+
+    return cursor_position
+
+
+def handle_character_input(ch: str, buffer: list[str], cursor_position: int) -> int:
+    buffer.insert(cursor_position, ch)
+    console.write(ch)
+    return cursor_position + 1
