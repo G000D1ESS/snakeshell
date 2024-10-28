@@ -43,6 +43,10 @@ def interactive_readline() -> str:
 
 
 def redraw_input_line(buffer: list[str], cursor_position: int) -> None:
+    """
+    Clears the current line in the terminal and redraws the buffer contents,
+    restores the previous cursor position.
+    """
     move_cursor(-cursor_position)
     console.write('\x1b[K')
     console.write(''.join(buffer))
@@ -53,6 +57,9 @@ def handle_input(
         buffer: list[str],
         cursor_position: int,
 ) -> tuple[str | None, int]:
+    """
+    Processes a single character of user input and handles different commands.
+    """
     match ch := console.read(1):
         case '\r':
             return handle_enter(buffer), cursor_position
@@ -70,22 +77,34 @@ def handle_input(
 
 
 def handle_enter(buffer: list[str]) -> str:
+    """
+    Handles the Enter key press, finalizing the current input.
+    """
     buffer.append('\n')
     console.write('\r\n')
     return ''.join(buffer)
 
 
 def handle_ctrl_d(buffer: list[str]) -> str | None:
+    """
+    Handles Ctrl-D (EOF) key press. Returns EOF if buffer is empty, otherwise does nothing.
+    """
     if not buffer:
         return EOF
 
 
 def handle_ctrl_c() -> str:
+    """
+    Handles Ctrl-C key press, which cancels the current line input.
+    """
     console.write('\r\n')
     return '\n'
 
 
 def handle_backspace(buffer: list[str], cursor_position: int) -> int:
+    """
+    Handles the backspace key, deleting the character before the cursor.
+    """
     if cursor_position > 0:
         cursor_position -= 1
         move_cursor(-1)
@@ -94,6 +113,9 @@ def handle_backspace(buffer: list[str], cursor_position: int) -> int:
 
 
 def handle_escape_sequences(buffer: list[str], cursor_position: int) -> int:
+    """
+    Handles escape sequences for arrow keys to move the cursor within the buffer.
+    """
     seq = console.read(2)
 
     # Left arrow
@@ -110,6 +132,9 @@ def handle_escape_sequences(buffer: list[str], cursor_position: int) -> int:
 
 
 def handle_character_input(ch: str, buffer: list[str], cursor_position: int) -> int:
+    """
+    Inserts a character into the buffer at the current cursor position.
+    """
     buffer.insert(cursor_position, ch)
     console.write(ch)
     return cursor_position + 1
