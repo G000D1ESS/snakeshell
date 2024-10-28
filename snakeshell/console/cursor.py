@@ -19,7 +19,8 @@ def set_cursor(cursor_type: CursorType) -> None:
 
 def move_cursor(x: int) -> None:
     """
-    TODO: Write.
+    Moves the cursor left or right in the console
+    by a specified number of positions.
     """
     if x > 0:
         console.write(f'\x1b[{x}C')

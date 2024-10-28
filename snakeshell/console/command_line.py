@@ -10,7 +10,7 @@ EOF = ''
 
 def command_line() -> str:
     """
-    TODO: Write
+    Reads a line of input, detecting if it is a TTY (interactive) input or not.
     """
     if not sys.stdin.isatty():
         return console.readline()
@@ -19,7 +19,8 @@ def command_line() -> str:
 
 def interactive_readline() -> str:
     """
-    TODO: Write.
+    Handles interactive line reading with cursor movement, backspace,
+    and basic command-line editing capabilities.
     """
     set_cursor(CursorType.THICK)
     default_settings = termios.tcgetattr(0)
