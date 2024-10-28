@@ -33,10 +33,6 @@ def interactive_readline() -> str:
 
         while True:
             match ch := console.read(1):
-                # EOF
-                case '':
-                    return EOF
-
                 # Enter
                 case '\r':
                     buffer.append('\n')
