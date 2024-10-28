@@ -81,10 +81,18 @@ def interactive_readline() -> str:
                     position += 1
 
             # Update command line
-            move_cursor(-position)
-            console.write('\x1b[K')
-            console.write(''.join(buffer))
-            move_cursor(position-len(buffer))
+            redraw_input_line(buffer, position)
+
     finally:
         termios.tcsetattr(0, termios.TCSADRAIN, default_settings)
         set_cursor(CursorType.DEFAULT)
+
+
+def redraw_input_line(
+        buffer: list[chr],
+        cursor_position: int,
+) -> None:
+    move_cursor(-cursor_position)
+    console.write('\x1b[K')
+    console.write(''.join(buffer))
+    move_cursor(cursor_position - len(buffer))
