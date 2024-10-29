@@ -36,7 +36,6 @@ def interactive_readline() -> str:
             if input_result is not None:
                 return input_result
             redraw_input_line(buffer, cursor_position)
-
     finally:
         termios.tcsetattr(0, termios.TCSADRAIN, default_settings)
         set_cursor(CursorType.DEFAULT)
