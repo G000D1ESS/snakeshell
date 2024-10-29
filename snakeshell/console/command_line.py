@@ -13,8 +13,15 @@ def command_line() -> str:
     Reads a line of input, detecting if it is a TTY (interactive) input or not.
     """
     if not sys.stdin.isatty():
-        return console.readline()
+        return not_interactive_readline()
     return interactive_readline()
+
+
+def not_interactive_readline() -> str:
+    line = console.readline()
+    if line == '':
+        raise EOFError
+    return line
 
 
 def interactive_readline() -> str:
@@ -27,18 +34,10 @@ def interactive_readline() -> str:
     try:
         tty.setraw(0)
         set_cursor(CursorType.THICK)
-
-        buffer: list[str] = []
-        cursor_position: int = 0
-
-        while True:
-            input_result, cursor_position = handle_input(buffer, cursor_position)
-            if input_result is not None:
-                return input_result
-            redraw_input_line(buffer, cursor_position)
+        return handle_input()
     finally:
-        termios.tcsetattr(0, termios.TCSADRAIN, default_settings)
         set_cursor(CursorType.DEFAULT)
+        termios.tcsetattr(0, termios.TCSADRAIN, default_settings)
 
 
 def redraw_input_line(buffer: list[str], cursor_position: int) -> None:
@@ -52,27 +51,29 @@ def redraw_input_line(buffer: list[str], cursor_position: int) -> None:
     move_cursor(cursor_position - len(buffer))
 
 
-def handle_input(
-        buffer: list[str],
-        cursor_position: int,
-) -> tuple[str | None, int]:
+def handle_input() -> str:
     """
     Processes a single character of user input and handles different commands.
     """
-    match ch := console.read(1):
-        case '\r':
-            return handle_enter(buffer), cursor_position
-        case '\x03':
-            return handle_ctrl_c(), cursor_position
-        case '\x04':
-            return handle_ctrl_d(buffer), cursor_position
-        case '\x7f':
-            cursor_position = handle_backspace(buffer, cursor_position)
-        case '\x1b':
-            cursor_position = handle_escape_sequences(buffer, cursor_position)
-        case _:
-            cursor_position = handle_character_input(ch, buffer, cursor_position)
-    return None, cursor_position
+    buffer: list[str] = []
+    cursor_position: int = 0
+
+    while True:
+        match ch := console.read(1):
+            case '\r':
+                return handle_enter(buffer)
+            case '\x03':
+                return handle_ctrl_c()
+            case '\x04':
+                handle_ctrl_d(buffer)
+            case '\x7f':
+                cursor_position = handle_backspace(buffer, cursor_position)
+            case '\x1b':
+                cursor_position = handle_escape_sequences(buffer, cursor_position)
+            case _:
+                cursor_position = handle_character_input(ch, buffer, cursor_position)
+
+        redraw_input_line(buffer, cursor_position)
 
 
 def handle_enter(buffer: list[str]) -> str:
@@ -84,12 +85,12 @@ def handle_enter(buffer: list[str]) -> str:
     return ''.join(buffer)
 
 
-def handle_ctrl_d(buffer: list[str]) -> str | None:
+def handle_ctrl_d(buffer: list[str]) -> None:
     """
     Handles Ctrl-D (EOF) key press. Returns EOF if buffer is empty, otherwise does nothing.
     """
     if not buffer:
-        return EOF
+        raise EOFError
 
 
 def handle_ctrl_c() -> str:
@@ -97,7 +98,7 @@ def handle_ctrl_c() -> str:
     Handles Ctrl-C key press, which cancels the current line input.
     """
     console.write('\r\n')
-    return '\n'
+    return ''
 
 
 def handle_backspace(buffer: list[str], cursor_position: int) -> int:
