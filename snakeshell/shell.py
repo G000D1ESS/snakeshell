@@ -23,8 +23,9 @@ def setup():
 def loop():
     # Start an infinite loop to continuously accept commands.
     while True:
-        line = console.prompt()
-        if not line:
+        try:
+            line = console.prompt()
+        except EOFError:
             break
 
         line = line.strip()
