@@ -26,48 +26,6 @@ This project aims to develop a Unix shell similar to Bash, written in Python and
 - **Quoting and Expansion**: Variable expansion and globbing
 - **Interactive Features**: Command history and auto-completion
 
-## 📋 Roadmap
-
-### Development Stages
-
-#### Stage 1: Fork/Exec/Wait ✅
-
-- Basics of Unix processes
-- Implement the simplest possible shell
-- Support built-in commands like `cd`, `exec`, etc.
-- Search for commands in `PATH`
-- Handle exit statuses and the `!` operator
-- Support command lists using `;`, `&&`, and `||`
-- Support subshells and line continuation
-
-#### Stage 2: Files and Pipes ✅
-
-- Implement file descriptor redirection (`<`, `>`, `>>`, `<>`)
-- Support pipes between commands (`|`)
-- Handle file descriptor duplication (`<&`, `>&`)
-- Implement process and command substitution (`<(...)`, `$(...)`)
-- Ensure proper handling of file descriptors and inheritance
-
-#### Stage 3: Job Control and Signals 🚧
-
-- Discuss signals and support for keyboard shortcuts like `Ctrl+C`, `Ctrl+\`, and `Ctrl+Z`
-- Implement background processes and job control (`&`, `jobs`, `fg`, `bg`)
-- Ensure proper handling of sessions and process groups
-
-#### Stage 4: Quoting and Expansion ⏳
-
-- Handle environments and variables
-- Implement globbing (wildcard matching)
-- Support quoting and character escaping
-- Handle alias and function expansions
-
-#### Stage 5: Interactivity ⏳
-
-- Enhance the shell for interactive work
-- Support command history
-- Implement auto-completion
-- Customize prompts and themes
-
 ## 🚀 Installation
 
 To install **SnakeShell**, follow these steps:
@@ -109,6 +67,48 @@ To use this Unix Shell, follow these steps:
     cd /path/to/directory
     mkdir new_directory
     ```
+
+## 📋 Roadmap
+
+### Development Stages
+
+#### Stage 1: Fork/Exec/Wait ✅
+
+- Basics of Unix processes
+- Implement the simplest possible shell
+- Support built-in commands like `cd`, `exec`, etc.
+- Search for commands in `PATH`
+- Handle exit statuses and the `!` operator
+- Support command lists using `;`, `&&`, and `||`
+- Support subshells and line continuation
+
+#### Stage 2: Files and Pipes ✅
+
+- Implement file descriptor redirection (`<`, `>`, `>>`, `<>`)
+- Support pipes between commands (`|`)
+- Handle file descriptor duplication (`<&`, `>&`)
+- Implement process and command substitution (`<(...)`, `$(...)`)
+- Ensure proper handling of file descriptors and inheritance
+
+#### Stage 3: Job Control and Signals 🚧
+
+- Discuss signals and support for keyboard shortcuts like `Ctrl+C`, `Ctrl+\`, and `Ctrl+Z`
+- Implement background processes and job control (`&`, `jobs`, `fg`, `bg`)
+- Ensure proper handling of sessions and process groups
+
+#### Stage 4: Quoting and Expansion ⏳
+
+- Handle environments and variables
+- Implement globbing (wildcard matching)
+- Support quoting and character escaping
+- Handle alias and function expansions
+
+#### Stage 5: Interactivity ⏳
+
+- Enhance the shell for interactive work
+- Support command history
+- Implement auto-completion
+- Customize prompts and themes
 
 ## 📄 License
 
