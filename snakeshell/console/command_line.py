@@ -63,6 +63,8 @@ def handle_input() -> str:
 
     while True:
         match ch := console.read(1):
+            case '\t':
+                handle_tab()
             case '\r':
                 return handle_enter(buffer)
             case '\x03':
@@ -86,6 +88,13 @@ def handle_enter(buffer: list[str]) -> str:
     buffer.append('\n')
     console.write('\r\n')
     return ''.join(buffer)
+
+
+def handle_tab() -> None:
+    """
+    Handles the Tab key press, do nothing.
+    """
+    pass
 
 
 def handle_ctrl_c() -> str:
