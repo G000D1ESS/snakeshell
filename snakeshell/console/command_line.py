@@ -18,6 +18,10 @@ def command_line() -> str:
 
 
 def not_interactive_readline() -> str:
+    """
+    Reads a line of input from a non-interactive source.
+    Raises EOFError if the line is empty, signaling the end of input.
+    """
     line = console.readline()
     if line == '':
         raise EOFError
@@ -27,10 +31,10 @@ def not_interactive_readline() -> str:
 def interactive_readline() -> str:
     """
     Handles interactive line reading with cursor movement, backspace,
-    and basic command-line editing capabilities.
+    and basic command-line editing capabilities. Configures the terminal for raw input
+    and calls `handle_input` to process input until Enter, Ctrl-C, or Ctrl-D is pressed.
     """
     default_settings = termios.tcgetattr(0)
-
     try:
         tty.setraw(0)
         set_cursor(CursorType.THICK)
@@ -43,7 +47,7 @@ def interactive_readline() -> str:
 def redraw_input_line(buffer: list[str], cursor_position: int) -> None:
     """
     Clears the current line in the terminal and redraws the buffer contents,
-    restores the previous cursor position.
+    restoring the previous cursor position.
     """
     move_cursor(-cursor_position)
     console.write('\x1b[K')
@@ -53,7 +57,8 @@ def redraw_input_line(buffer: list[str], cursor_position: int) -> None:
 
 def handle_input() -> str:
     """
-    Processes a single character of user input and handles different commands.
+    Reads and processes user input in the loop until Enter, Ctrl-C, or Ctrl-D is pressed.
+    Manages editing commands (backspace, escape sequences) and regular character input.
     """
     buffer: list[str] = []
     cursor_position: int = 0
@@ -85,20 +90,22 @@ def handle_enter(buffer: list[str]) -> str:
     return ''.join(buffer)
 
 
-def handle_ctrl_d(buffer: list[str]) -> None:
-    """
-    Handles Ctrl-D (EOF) key press. Returns EOF if buffer is empty, otherwise does nothing.
-    """
-    if not buffer:
-        raise EOFError
-
-
 def handle_ctrl_c() -> str:
     """
     Handles Ctrl-C key press, which cancels the current line input.
+    Clears the input and returns an empty string to signify cancellation.
     """
     console.write('\r\n')
     return ''
+
+
+def handle_ctrl_d(buffer: list[str]) -> None:
+    """
+    Handles Ctrl-D (EOF) key press.
+    Raises EOFError if the buffer is empty, signaling the end of input.
+    """
+    if not buffer:
+        raise EOFError
 
 
 def handle_backspace(buffer: list[str], cursor_position: int) -> int:
