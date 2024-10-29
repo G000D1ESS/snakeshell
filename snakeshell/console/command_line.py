@@ -5,8 +5,6 @@ import tty
 from snakeshell import console
 from snakeshell.console.cursor import move_cursor, set_cursor, CursorType
 
-EOF = ''
-
 
 def command_line() -> str:
     """
