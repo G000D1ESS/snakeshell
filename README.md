@@ -28,7 +28,15 @@ This project aims to develop a Unix shell similar to Bash, written in Python and
 
 ## 🚀 Installation
 
-To install **SnakeShell**, follow these steps:
+### Install with pip (Recommended):
+
+- Install SnakeShell from PyPI:
+
+    ```bash
+    python3 -m pip install cobrashell
+    ```
+
+### From Source:
 
 1. **Clone the repository**
 
