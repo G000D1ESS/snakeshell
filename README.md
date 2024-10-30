@@ -19,11 +19,11 @@ This project aims to develop a Unix shell similar to Bash, written in Python and
 
 ## 🌟 Features
 
-- **Process Management**: Forking, executing, and waiting for processes
-- **File Redirection and Pipes**: Input/output redirection and command pipelines
-- **Job Control**: Background processes and signal handling
-- **Quoting and Expansion**: Variable expansion and globbing
-- **Interactive Features**: Command history and auto-completion
+- ✨ **Process Management**: Forking, executing, and waiting for processes
+- ✨ **File Redirection and Pipes**: Input/output redirection and command pipelines
+- 🚧 **Job Control**: Background processes and signal handling
+- ⏳ **Quoting and Expansion**: Variable expansion and globbing
+- ⏳ **Interactive Features**: Command history and auto-completion
 
 ## 🚀 Installation
 
