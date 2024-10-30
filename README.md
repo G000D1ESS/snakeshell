@@ -11,10 +11,9 @@ This project aims to develop a Unix shell similar to Bash, written in Python and
 ## 📚 Table of Contents
 
 - [Features](#-features)
-- [Roadmap](#-roadmap)
-  - [Development Stages](#development-stages)
 - [Installation](#-installation)
 - [Usage](#-usage)
+- [Roadmap](#-roadmap)
 - [Contributing](#-contributing)
 - [License](#-license)
 
